@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미션 관리 - Standing Party</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <button class="btn-back" onclick="location.href='admin.html'">← 관리자 홈으로</button>
+
+  <div class="container">
+    <h1 class="section-title">🎯 전체 미션 관리</h1>
+
+    <form id="missionForm" onsubmit="saveMission(); return false;">
+      <input type="hidden" id="missionId" /> <!-- 숨겨진 필드 -->
+
+      <div class="form-group">
+        <label for="title">미션 제목</label>
+        <input type="text" id="title" required />
+      </div>
+      <div class="form-group">
+        <label for="description">미션 설명</label>
+        <textarea id="description"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="points">점수</label>
+        <input type="number" id="points" required />
+      </div>
+      <button type="submit" class="btn btn-primary">💾 저장</button>
+    </form>
+
+    <hr />
+
+    <h2>📋 등록된 미션 목록</h2>
+    <ul id="missionList"></ul>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    let editing = false;
+
+    async function fetchMissions() {
+      // 🔍 여러 가능한 엔드포인트 시도
+      const possibleEndpoints = [
+        "/admin/missions",
+        "/missions/global", 
+        "/global-missions",
+        "/admin/global-missions"
+      ];
+      
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log(`🔍 미션 목록 불러오기 시도: ${endpoint}`);
+          const missions = await callAPI(endpoint, "GET");
+          console.log(`✅ 미션 응답 (${endpoint}):`, missions);
+        
+        const listEl = document.getElementById("missionList");
+        listEl.innerHTML = "";
+        
+        if (!Array.isArray(missions) || missions.length === 0) {
+          listEl.innerHTML = "<li>등록된 미션이 없습니다.</li>";
+          return;
+        }
+        
+          missions.forEach((m) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              <b>${m.missionId}</b> - ${m.title} (${m.points}점)
+              <br />${m.description || ""}
+              <br />
+              <button onclick='editMission(${JSON.stringify(m)})'>✏️ 수정</button>
+              <button onclick='deleteMission("${m.missionId}")'>🗑 삭제</button>
+              <hr />
+            `;
+            listEl.appendChild(li);
+          });
+          
+          console.log(`🎯 성공한 엔드포인트: ${endpoint}`);
+          return; // 성공하면 더 이상 시도하지 않음
+          
+        } catch (err) {
+          console.warn(`❌ ${endpoint} 실패:`, err.message);
+          continue; // 다음 엔드포인트 시도
+        }
+      }
+      
+      // 모든 엔드포인트 실패
+      console.error("❌ 모든 미션 엔드포인트 실패");
+      const listEl = document.getElementById("missionList");
+      listEl.innerHTML = `<li style="color: red;">미션 목록을 불러올 수 없습니다. 모든 API 엔드포인트가 실패했습니다.</li>`;
+    }
+
+    async function saveMission() {
+      try {
+        const missionIdInput = document.getElementById("missionId");
+        let missionId = missionIdInput.value;
+
+        if (!missionId) {
+          missionId = `mission-${Date.now()}`; // 자동 생성
+        }
+
+        const data = {
+          missionId,
+          title: document.getElementById("title").value,
+          description: document.getElementById("description").value,
+          points: Number(document.getElementById("points").value)
+        };
+
+        console.log("💾 미션 저장 시도:", data);
+        await callAPI("/admin/missions", "POST", data);
+        alert("저장되었습니다.");
+        document.getElementById("missionForm").reset();
+        missionIdInput.value = ""; // hidden 필드 초기화
+        editing = false;
+        fetchMissions();
+      } catch (err) {
+        console.error("❌ 미션 저장 실패:", err);
+        alert(`저장 실패: ${err.message}`);
+      }
+    }
+
+    async function deleteMission(missionId) {
+      if (!confirm("정말 삭제하시겠습니까?")) return;
+      try {
+        console.log("🗑 미션 삭제 시도:", missionId);
+        await callAPI("/admin/missions", "DELETE", { missionId });
+        alert("삭제되었습니다.");
+        fetchMissions();
+      } catch (err) {
+        console.error("❌ 미션 삭제 실패:", err);
+        alert(`삭제 실패: ${err.message}`);
+      }
+    }
+
+    function editMission(m) {
+      document.getElementById("missionId").value = m.missionId;
+      document.getElementById("title").value = m.title;
+      document.getElementById("description").value = m.description;
+      document.getElementById("points").value = m.points;
+      editing = true;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    fetchMissions();
+  </script>
+</body>
+</html>

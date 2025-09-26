@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>방 입장 - Standing Party</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <button class="btn-back" onclick="location.href='index.html'">← 나가기</button>
+
+    <div class="logo-section">
+      <h1 class="app-title">🎉 Standing Party 입장 완료</h1>
+      <p id="userInfo"></p>
+    </div>
+
+    <nav class="tabs">
+      <button onclick="switchTab('participants')">👥 참여자</button>
+      <button id="missionTabBtn" onclick="switchTab('missions')" style="display:none">🧩 미션</button>
+    </nav>
+
+    <div id="tab-participants" class="tab-content">
+      <h2>현재 참여자 목록</h2>
+      <div id="participantList"></div>
+    </div>
+
+    <div id="tab-missions" class="tab-content hidden">
+      <h2>미션 목록</h2>
+      <div id="missionList"></div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const params = new URLSearchParams(location.search);
+      const roomId = params.get("roomId");
+      const phone = params.get("phone");
+      const code = params.get("code");
+      const nickname = params.get("nickname");
+      const showMission = params.get("mission") === "true";
+
+      if (!roomId || !phone || !code || !nickname) {
+        alert("잘못된 접근입니다.");
+        location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("userInfo").textContent = `✅ ${nickname} (#${code}) 로 입장`;
+      if (showMission) {
+        document.getElementById("missionTabBtn").style.display = "inline-block";
+      }
+
+      loadParticipants();
+      if (showMission) loadMissions();
+
+      async function loadParticipants() {
+        try {
+          const data = await callAPI(`/participants?roomId=${roomId}`, "GET");
+          console.log("[participants response]", data); // 🔍 디버깅용
+          const list = data?.participants || data || [];
+          const div = document.getElementById("participantList");
+          div.innerHTML = "";
+          
+          if (!Array.isArray(list) || list.length === 0) {
+            div.innerHTML = "<p>참여자가 없습니다.</p>";
+            return;
+          }
+          
+          list.forEach((p) => {
+            // DynamoDB 형식과 일반 JSON 모두 지원
+            const name = p.nickname?.S || p.nickname || "이름없음";
+            const code = p.code?.S || p.code || "----";
+            const pt = p.points?.N || p.points || "0";
+            const gender = p.gender?.S || p.gender || "-";
+            const el = document.createElement("div");
+            el.className = "participant-item";
+            el.textContent = `👤 ${name} (#${code}) · ${gender} · ${pt}점`;
+            div.appendChild(el);
+          });
+        } catch (err) {
+          console.error(err);
+          alert("참여자 목록을 불러오지 못했습니다.");
+        }
+      }
+
+      async function loadMissions() {
+        try {
+          const data = await callAPI(`/missions/my?roomId=${roomId}&phone=${phone}`, "GET");
+          const missions = data || [];
+          const div = document.getElementById("missionList");
+          div.innerHTML = "";
+
+          if (!missions.length) {
+            div.innerHTML = "<p>미션이 없습니다.</p>";
+            return;
+          }
+
+          missions.forEach((m) => {
+            const section = document.createElement("div");
+            section.className = "mission-box";
+            section.innerHTML = `
+              <h4>${m.title} (${m.points}점)</h4>
+              <p>${m.description}</p>
+              <div>
+                ${m.done ? "✅ 완료됨" : `
+                  <input type="text" placeholder="상대 코드 입력" id="input-${m.id}" />
+                  <button onclick="submitMission('${m.id}')">제출</button>
+                `}
+              </div>
+              <hr />
+            `;
+            div.appendChild(section);
+          });
+        } catch (err) {
+          console.error(err);
+          alert("미션 목록을 불러오지 못했습니다.");
+        }
+      }
+
+      window.submitMission = async (missionId) => {
+        const input = document.getElementById(`input-${missionId}`);
+        const codeInput = input?.value?.trim();
+        if (!codeInput) return alert("상대방 코드를 입력해주세요");
+        try {
+          const payload = { roomId, missionId, phone, targetCode: codeInput };
+          const res = await callAPI("/missions/submit", "POST", payload);
+          alert("미션 완료! +" + res.points + "점");
+          loadMissions();
+        } catch (err) {
+          alert(err.message || "제출 실패");
+        }
+      };
+    });
+
+    function switchTab(name) {
+      document.querySelectorAll(".tab-content").forEach((el) => el.classList.add("hidden"));
+      document.getElementById(`tab-${name}`).classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>

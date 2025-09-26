@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Standing Party</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-section">
+      <div class="heart-container">
+        <div class="heart-pulse"></div>
+        <div class="heart-icon">
+          <svg class="heart-with-ecg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- 하트 모양 -->
+            <path class="heart-shape" d="M60,105 C60,105 20,70 20,45 C20,30 30,20 45,20 C52,20 58,25 60,30 C62,25 68,20 75,20 C90,20 100,30 100,45 C100,70 60,105 60,105 Z"/>
+            
+            <!-- 심전도 라인 -->
+            <g class="ecg-line">
+              <path class="ecg-animated" d="M15,60 L30,60 L35,45 L40,75 L45,30 L50,90 L55,60 L105,60" 
+                    stroke-width="2.5" opacity="0.9"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <h1 class="app-title">Standing Party</h1>
+    </div>
+    
+    <div class="button-section">
+      <button class="btn btn-primary" onclick="location.href='admin.html'">
+        관리자 입장
+      </button>
+      <button class="btn btn-secondary" onclick="location.href='participant.html'">
+        참여자 입장
+      </button>
+    </div>
+  </div>
+</body>
+</html>

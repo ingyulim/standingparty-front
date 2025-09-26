@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>관리자 페이지 - Standing Party</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <button class="btn-back" onclick="location.href='index.html'">← 뒤로</button>
+
+  <div class="container">
+    <div class="logo-section">
+      <div class="heart-container">
+        <div class="heart-icon">
+          <svg class="heart-with-ecg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <path class="heart-shape" d="M60,105 C60,105 20,70 20,45 C20,30 30,20 45,20 C52,20 58,25 60,30 C62,25 68,20 75,20 C90,20 100,30 100,45 C100,70 60,105 60,105 Z"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="app-title">관리자</h1>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <nav class="tabs">
+      <button class="tab" onclick="switchTab('rooms')">방 관리</button>
+      <button class="tab" onclick="location.href='admin-missions.html'">미션 관리</button>
+    </nav>
+
+    <!-- 방 생성 탭 -->
+    <section id="tab-rooms" class="tab-content">
+      <form onsubmit="createRoom(); return false;">
+        <div class="form-group">
+          <label for="roomName">파티룸 이름</label>
+          <input type="text" id="roomName" placeholder="파티룸 이름을 입력하세요" required/>
+        </div>
+        <button type="submit" class="btn btn-primary">파티룸 생성</button>
+      </form>
+      <div id="result"></div>
+
+      <hr />
+      <h3>🗂 방 목록 및 미션 ON/OFF</h3>
+      <div id="roomList"></div>
+    </section>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.add('hidden'));
+      document.getElementById(`tab-${name}`).classList.remove('hidden');
+    }
+
+    // admin.js의 fetchRooms 함수를 사용하므로 제거
+
+    async function toggleMission(roomId, isActive) {
+      try {
+        await callAPI("/admin/missions/active", "POST", {
+          roomId,
+          active: isActive,
+        });
+        alert(`미션 ${isActive ? "활성화" : "비활성화"} 완료`);
+      } catch (err) {
+        alert("에러: " + err.message);
+      }
+    }
+
+    // fetchRooms는 admin.js의 DOMContentLoaded에서 자동 호출됨
+  </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>참여자 페이지 - Standing Party</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <button class="btn-back" onclick="location.href='index.html'">← 뒤로</button>
+  
+  <div class="container">
+    <div class="logo-section">
+      <div class="heart-container">
+        <div class="heart-pulse"></div>
+        <div class="heart-icon">
+          <!-- 하트 아이콘 SVG 그대로 -->
+        </div>
+      </div>
+      <h1 class="app-title">참여자</h1>
+    </div>
+    
+    <!-- 여기서부터 참여 폼 -->
+    <form id="joinForm">
+      <!-- 방 선택 -->
+      <div class="form-group">
+        <label>참여할 방</label>
+        <div id="roomList" class="room-list"></div>
+      </div>
+
+      <!-- 전화번호 -->
+      <div class="form-group">
+        <label for="phone">전화번호</label>
+        <input type="tel" id="phone" placeholder="01012345678" required/>
+        <small>※ 전화번호는 신규/기존 구분 용도로만 사용되며, 소셜링 종료 후 폐기됩니다.</small>
+      </div>
+
+      <!-- 신규 사용자 입력 (처음엔 숨김) -->
+      <div id="extraFields" style="display:none;">
+        <div class="form-group">
+          <label for="participantName">닉네임</label>
+          <input type="text" id="participantName" placeholder="닉네임을 입력하세요"/>
+        </div>
+        <div class="form-group">
+          <label for="gender">성별</label>
+          <select id="gender">
+            <option value="">선택하세요</option>
+            <option value="M">남성</option>
+            <option value="F">여성</option>
+            <option value="N">기타/선택안함</option>
+          </select>
+        </div>
+      </div>
+
+      <input type="hidden" id="selectedRoomId" required />
+      <button type="submit" class="btn btn-primary">파티 참여</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/participant.js"></script>
+</body>
+</html>
