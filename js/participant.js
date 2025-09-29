@@ -91,21 +91,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       const code = res.code || "";
       const nick = res.nickname || "";
 
-      // 🔍 미션 활성화 여부 체크
-      let showMissionTab = false;
-      try {
-        const meta = await callAPI(`/room/meta?roomId=${roomId}`, "GET");
-        showMissionTab = meta?.missionActive === true;
-      } catch (err) {
-        console.warn("미션 활성화 여부 확인 실패", err);
-      }
+      // 🔍 미션 활성화 여부는 room.html에서 DB를 통해 직접 확인
+      // participant.js에서는 URL 파라미터 없이 방으로 이동
+      let showMissionTab = false; // room.html에서 DB 기준으로 결정됨
 
       // 페이지 이동
       const query = `room.html?roomId=${encodeURIComponent(
         roomId
       )}&phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(
         code
-      )}&nickname=${encodeURIComponent(nick)}&mission=${showMissionTab}`;
+      )}&nickname=${encodeURIComponent(nick)}`;
       window.location.href = query;
     } catch (err) {
       console.error(err);

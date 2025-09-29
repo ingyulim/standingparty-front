@@ -13,7 +13,7 @@
     <h1 class="section-title">🎯 전체 미션 관리</h1>
 
     <form id="missionForm" onsubmit="saveMission(); return false;">
-      <input type="hidden" id="missionId" /> <!-- 숨겨진 필드 -->
+      <input type="hidden" id="missionId" />
 
       <div class="form-group">
         <label for="title">미션 제목</label>
@@ -41,28 +41,27 @@
     let editing = false;
 
     async function fetchMissions() {
-      // 🔍 여러 가능한 엔드포인트 시도
       const possibleEndpoints = [
         "/admin/missions",
-        "/missions/global", 
+        "/missions/global",
         "/global-missions",
         "/admin/global-missions"
       ];
-      
+
       for (const endpoint of possibleEndpoints) {
         try {
           console.log(`🔍 미션 목록 불러오기 시도: ${endpoint}`);
           const missions = await callAPI(endpoint, "GET");
           console.log(`✅ 미션 응답 (${endpoint}):`, missions);
-        
-        const listEl = document.getElementById("missionList");
-        listEl.innerHTML = "";
-        
-        if (!Array.isArray(missions) || missions.length === 0) {
-          listEl.innerHTML = "<li>등록된 미션이 없습니다.</li>";
-          return;
-        }
-        
+
+          const listEl = document.getElementById("missionList");
+          listEl.innerHTML = "";
+
+          if (!Array.isArray(missions) || missions.length === 0) {
+            listEl.innerHTML = "<li>등록된 미션이 없습니다.</li>";
+            return;
+          }
+
           missions.forEach((m) => {
             const li = document.createElement("li");
             li.innerHTML = `
@@ -75,18 +74,15 @@
             `;
             listEl.appendChild(li);
           });
-          
+
           console.log(`🎯 성공한 엔드포인트: ${endpoint}`);
-          return; // 성공하면 더 이상 시도하지 않음
-          
+          return; // 성공하면 종료
         } catch (err) {
           console.warn(`❌ ${endpoint} 실패:`, err.message);
-          continue; // 다음 엔드포인트 시도
+          continue;
         }
       }
-      
-      // 모든 엔드포인트 실패
-      console.error("❌ 모든 미션 엔드포인트 실패");
+
       const listEl = document.getElementById("missionList");
       listEl.innerHTML = `<li style="color: red;">미션 목록을 불러올 수 없습니다. 모든 API 엔드포인트가 실패했습니다.</li>`;
     }
@@ -97,7 +93,7 @@
         let missionId = missionIdInput.value;
 
         if (!missionId) {
-          missionId = `mission-${Date.now()}`; // 자동 생성
+          missionId = `mission-${Date.now()}`;
         }
 
         const data = {
@@ -111,7 +107,7 @@
         await callAPI("/admin/missions", "POST", data);
         alert("저장되었습니다.");
         document.getElementById("missionForm").reset();
-        missionIdInput.value = ""; // hidden 필드 초기화
+        missionIdInput.value = "";
         editing = false;
         fetchMissions();
       } catch (err) {
@@ -124,7 +120,7 @@
       if (!confirm("정말 삭제하시겠습니까?")) return;
       try {
         console.log("🗑 미션 삭제 시도:", missionId);
-        await callAPI("/admin/missions", "DELETE", { missionId });
+        await callAPI(`/admin/missions/${missionId}`, "DELETE");
         alert("삭제되었습니다.");
         fetchMissions();
       } catch (err) {

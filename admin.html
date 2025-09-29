@@ -27,20 +27,25 @@
       <button class="tab" onclick="location.href='admin-missions.html'">미션 관리</button>
     </nav>
 
-    <!-- 방 생성 탭 -->
+    <!-- 방 관리 탭 -->
     <section id="tab-rooms" class="tab-content">
-      <form onsubmit="createRoom(); return false;">
-        <div class="form-group">
-          <label for="roomName">파티룸 이름</label>
-          <input type="text" id="roomName" placeholder="파티룸 이름을 입력하세요" required/>
-        </div>
-        <button type="submit" class="btn btn-primary">파티룸 생성</button>
-      </form>
-      <div id="result"></div>
+      <!-- 새 방 만들기 섹션 -->
+      <div class="admin-card">
+        <h3>새 방 만들기</h3>
+        <form onsubmit="createRoom(); return false;" class="room-form">
+          <div class="form-group">
+            <input type="text" id="roomName" placeholder="방 번호 (숫자만)" required/>
+            <button type="submit" class="btn btn-primary">방 만들기</button>
+          </div>
+        </form>
+        <div id="result"></div>
+      </div>
 
-      <hr />
-      <h3>🗂 방 목록 및 미션 ON/OFF</h3>
-      <div id="roomList"></div>
+      <!-- 방 목록 섹션 -->
+      <div class="admin-card">
+        <h3>방 목록</h3>
+        <div id="roomList" class="room-grid"></div>
+      </div>
     </section>
   </div>
 

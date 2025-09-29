@@ -7,28 +7,33 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="room-container">
     <button class="btn-back" onclick="location.href='index.html'">← 나가기</button>
 
-    <div class="logo-section">
-      <h1 class="app-title">🎉 Standing Party 입장 완료</h1>
+    <header class="room-header glass-card">
+      <h1 id="roomTitle">Standing Party</h1>
       <p id="userInfo"></p>
-    </div>
+    </header>
 
-    <nav class="tabs">
-      <button onclick="switchTab('participants')">👥 참여자</button>
-      <button id="missionTabBtn" onclick="switchTab('missions')" style="display:none">🧩 미션</button>
+    <!-- 탭 네비게이션 -->
+    <nav class="room-tabs glass-card">
+      <button id="participantsTabBtn" class="tab-btn active" onclick="switchTab('participants')">
+        👥 참여자 (<span id="participantCount">0</span>)
+      </button>
+      <button id="missionsTabBtn" class="tab-btn" onclick="switchTab('missions')" style="display: none">
+        🧩 미션 (<span id="missionCount">0</span>)
+      </button>
     </nav>
 
-    <div id="tab-participants" class="tab-content">
-      <h2>현재 참여자 목록</h2>
-      <div id="participantList"></div>
-    </div>
+    <!-- 참여자 -->
+    <section id="tab-participants" class="tab-content glass-card">
+      <div id="participantList" class="list-box"></div>
+    </section>
 
-    <div id="tab-missions" class="tab-content hidden">
-      <h2>미션 목록</h2>
-      <div id="missionList"></div>
-    </div>
+    <!-- 미션 -->
+    <section id="tab-missions" class="tab-content glass-card hidden">
+      <div id="missionList" class="list-box"></div>
+    </section>
   </div>
 
   <script src="js/common.js"></script>
@@ -39,7 +44,6 @@
       const phone = params.get("phone");
       const code = params.get("code");
       const nickname = params.get("nickname");
-      const showMission = params.get("mission") === "true";
 
       if (!roomId || !phone || !code || !nickname) {
         alert("잘못된 접근입니다.");
@@ -48,34 +52,58 @@
       }
 
       document.getElementById("userInfo").textContent = `✅ ${nickname} (#${code}) 로 입장`;
-      if (showMission) {
-        document.getElementById("missionTabBtn").style.display = "inline-block";
+
+      // 방 정보에서 미션 활성화 여부 가져오기
+      let missionActive = false;
+      try {
+        const rooms = await callAPI("/rooms", "GET");
+        const currentRoom = rooms.find(r => (r.id || r.roomId) === roomId);
+        if (currentRoom) {
+          const roomName = currentRoom.title || currentRoom.name || "Standing Party";
+          document.getElementById("roomTitle").textContent = roomName;
+          missionActive = currentRoom.missionActive === true || currentRoom.missionActive === "true";
+          console.log("🧩 missionActive (from DB):", missionActive);
+        }
+      } catch (e) {
+        console.warn("방 정보 불러오기 실패", e);
+      }
+
+      // 미션 탭 표시 여부 결정
+      const missionTabBtn = document.getElementById("missionsTabBtn");
+      const missionTabContent = document.getElementById("tab-missions");
+
+      if (missionActive) {
+        missionTabBtn.style.display = "inline-block";
+        loadMissions();
+        console.log("🎯 미션 탭 활성화됨");
+      } else {
+        missionTabBtn.remove();
+        missionTabContent.remove();
+        console.log("🎯 미션 탭 제거됨");
       }
 
       loadParticipants();
-      if (showMission) loadMissions();
 
       async function loadParticipants() {
         try {
           const data = await callAPI(`/participants?roomId=${roomId}`, "GET");
-          console.log("[participants response]", data); // 🔍 디버깅용
           const list = data?.participants || data || [];
           const div = document.getElementById("participantList");
           div.innerHTML = "";
-          
+          document.getElementById("participantCount").textContent = list.length;
+
           if (!Array.isArray(list) || list.length === 0) {
             div.innerHTML = "<p>참여자가 없습니다.</p>";
             return;
           }
-          
+
           list.forEach((p) => {
-            // DynamoDB 형식과 일반 JSON 모두 지원
             const name = p.nickname?.S || p.nickname || "이름없음";
             const code = p.code?.S || p.code || "----";
             const pt = p.points?.N || p.points || "0";
             const gender = p.gender?.S || p.gender || "-";
             const el = document.createElement("div");
-            el.className = "participant-item";
+            el.className = "card-item";
             el.textContent = `👤 ${name} (#${code}) · ${gender} · ${pt}점`;
             div.appendChild(el);
           });
@@ -91,6 +119,7 @@
           const missions = data || [];
           const div = document.getElementById("missionList");
           div.innerHTML = "";
+          document.getElementById("missionCount").textContent = missions.length;
 
           if (!missions.length) {
             div.innerHTML = "<p>미션이 없습니다.</p>";
@@ -99,17 +128,16 @@
 
           missions.forEach((m) => {
             const section = document.createElement("div");
-            section.className = "mission-box";
+            section.className = "card-item";
             section.innerHTML = `
               <h4>${m.title} (${m.points}점)</h4>
               <p>${m.description}</p>
               <div>
                 ${m.done ? "✅ 완료됨" : `
                   <input type="text" placeholder="상대 코드 입력" id="input-${m.id}" />
-                  <button onclick="submitMission('${m.id}')">제출</button>
+                  <button class="btn-small" onclick="submitMission('${m.id}')">제출</button>
                 `}
               </div>
-              <hr />
             `;
             div.appendChild(section);
           });
@@ -135,8 +163,10 @@
     });
 
     function switchTab(name) {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
       document.querySelectorAll(".tab-content").forEach((el) => el.classList.add("hidden"));
       document.getElementById(`tab-${name}`).classList.remove("hidden");
+      document.getElementById(`${name}TabBtn`).classList.add("active");
     }
   </script>
 </body>

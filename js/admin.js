@@ -68,21 +68,82 @@ async function createRoom() {
   
       console.log("[room response]", rooms); // 🔍 디버깅용
   
-      rooms.forEach((r) => {
-        // API 응답에서 다양한 필드명 지원
+      // 방 목록을 카드 형태로 표시 (성능 최적화)
+      const renderRoomCard = (r) => {
         const title = r.title || r.name || "(제목 없음)";
         const id = r.id || r.roomId || "(ID 없음)";
-        const div = document.createElement("div");
-        div.className = "room-row";
+        const missionActive = r.missionActive === true || r.missionActive === "true";
+        
+        const roomCard = document.createElement("div");
+        roomCard.className = "room-card";
+        roomCard.id = `room-${id}`;
   
-        div.innerHTML = `
-          <b>${title}</b> (${id})
-          <button onclick="toggleMission('${id}', true')">🟢 미션 ON</button>
-          <button onclick="toggleMission('${id}', false')">🔴 미션 OFF</button>
+        const missionStatus = missionActive ? "🎯 미션 활성" : "⚪ 미션 비활성";
+        const missionClass = missionActive ? "mission-active" : "mission-inactive";
+  
+        roomCard.innerHTML = `
+          <div class="room-header">
+            <h4>방 ${title}</h4>
+            <div class="room-actions">
+              <button class="btn-delete" onclick="deleteRoom('${id}')" title="방 삭제">🗑️</button>
+            </div>
+          </div>
+          
+          <div class="room-info">
+            <div class="info-row">
+              <span class="label">참가자</span>
+              <span class="value" id="count-${id}">로딩중...</span>
+            </div>
+            <div class="info-row">
+              <span class="label">미션 상태</span>
+              <span class="value ${missionClass}">${missionStatus}</span>
+            </div>
+          </div>
+          
+          <div class="room-controls">
+            <button class="btn-mission ${missionActive ? 'active' : ''}" 
+                    onclick="toggleMission('${id}', ${!missionActive})">
+              ${missionActive ? '미션 비활성화' : '미션 활성화'}
+            </button>
+            <button class="btn-participants" onclick="showParticipants('${id}')">
+              참여자 관리
+            </button>
+          </div>
+          
+          <div id="participants-${id}" class="participants-section hidden">
+            <div class="participants-header">
+              <h5>참여자 목록</h5>
+              <button class="btn-close" onclick="hideParticipants('${id}')">×</button>
+            </div>
+            <div class="participants-list"></div>
+          </div>
         `;
   
-        roomList.appendChild(div);
-      });
+        roomList.appendChild(roomCard);
+        
+        // 참여자 수는 비동기로 따로 로드
+        loadParticipantCount(id);
+      };
+      
+      // 참여자 수를 비동기로 로드하는 함수
+      const loadParticipantCount = async (roomId) => {
+        try {
+          const participants = await callAPI(`/participants?roomId=${roomId}`, "GET");
+          const count = participants?.participants?.length || participants?.length || 0;
+          const countElement = document.getElementById(`count-${roomId}`);
+          if (countElement) {
+            countElement.textContent = `${count}명`;
+          }
+        } catch (e) {
+          const countElement = document.getElementById(`count-${roomId}`);
+          if (countElement) {
+            countElement.textContent = "0명";
+          }
+        }
+      };
+      
+      // 모든 방 카드를 먼저 렌더링
+      rooms.forEach(renderRoomCard);
     } catch (err) {
       console.error("방 목록 오류:", err);
       roomList.innerHTML = "❌ 방 목록을 불러오지 못했습니다.";
@@ -96,11 +157,101 @@ async function createRoom() {
         active: isActive,
       });
       alert(`미션 ${isActive ? "활성화" : "비활성화"} 완료`);
+      
+      // 상태 변경 후 방 목록 새로고침
+      fetchRooms();
     } catch (err) {
       alert("에러: " + err.message);
     }
   }
   
+  // 방 삭제 함수
+  async function deleteRoom(roomId) {
+    if (!confirm(`방 ${roomId}를 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+    
+    try {
+      await callAPI(`/rooms/${roomId}`, "DELETE");
+      alert("방이 삭제되었습니다.");
+      fetchRooms(); // 목록 새로고침
+    } catch (err) {
+      alert("방 삭제 실패: " + err.message);
+    }
+  }
+
+  // 참여자 목록 표시
+  async function showParticipants(roomId) {
+    const participantsSection = document.getElementById(`participants-${roomId}`);
+    const participantsList = participantsSection.querySelector('.participants-list');
+    
+    participantsSection.classList.remove('hidden');
+    participantsList.innerHTML = "로딩중...";
+    
+    try {
+      const data = await callAPI(`/participants?roomId=${roomId}`, "GET");
+      const participants = data?.participants || data || [];
+      
+      if (participants.length === 0) {
+        participantsList.innerHTML = "<p>참여자가 없습니다.</p>";
+        return;
+      }
+      
+      participantsList.innerHTML = participants.map(p => {
+        const nickname = p.nickname?.S || p.nickname || "(닉네임 없음)";
+        const phone = p.phone?.S || p.phone || "";
+        const code = p.code?.S || p.code || "";
+        const points = p.points?.N || p.points || 0;
+        
+        return `
+          <div class="participant-item">
+            <div class="participant-info">
+              <strong>${nickname}</strong>
+              <span class="participant-code">#${code}</span>
+              <span class="participant-points">포인트: ${points}점</span>
+            </div>
+            <div class="participant-actions">
+              <button class="btn-participant-delete" 
+                      onclick="deleteParticipant('${roomId}', '${phone}', '${nickname}')"
+                      title="참여자 삭제">삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+    } catch (err) {
+      participantsList.innerHTML = `<p>참여자 목록 조회 실패: ${err.message}</p>`;
+    }
+  }
+
+  // 참여자 목록 숨기기
+  function hideParticipants(roomId) {
+    const participantsSection = document.getElementById(`participants-${roomId}`);
+    participantsSection.classList.add('hidden');
+  }
+
+  // 참여자 삭제
+  async function deleteParticipant(roomId, phone, nickname) {
+    if (!confirm(`참여자 ${nickname}을(를) 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+    
+    try {
+      await callAPI(`/participants/${roomId}/${phone}`, "DELETE");
+      alert(`참여자 ${nickname}이(가) 삭제되었습니다.`);
+      showParticipants(roomId); // 목록 새로고침
+      fetchRooms(); // 전체 목록도 새로고침 (참여자 수 업데이트)
+    } catch (err) {
+      alert("참여자 삭제 실패: " + err.message);
+    }
+  }
+
+  // 전역 함수로 등록
+  window.deleteRoom = deleteRoom;
+  window.showParticipants = showParticipants;
+  window.hideParticipants = hideParticipants;
+  window.deleteParticipant = deleteParticipant;
+
   // ✅ 페이지 로드시 방 목록 로딩
   document.addEventListener("DOMContentLoaded", () => {
     fetchRooms();
