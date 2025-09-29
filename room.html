@@ -33,15 +33,6 @@
     <!-- 미션 -->
     <section id="tab-missions" class="tab-content glass-card hidden">
       <div id="missionList" class="list-box"></div>
-      
-      <!-- 미션 진행도 -->
-      <div class="mission-progress-section">
-        <h3>미션 진행도</h3>
-        <div class="progress-text" id="missionProgressText">0 / 0 완료</div>
-        <div class="progress-bar" id="missionProgressBar">
-          <div class="progress-fill" id="missionProgressFill"></div>
-        </div>
-      </div>
     </section>
   </div>
 
@@ -62,6 +53,9 @@
 
       document.getElementById("userInfo").textContent = `✅ ${nickname} (#${code}) 로 입장`;
 
+      // 전역 변수로 현재 사용자 코드 저장 (본인 확인용)
+      window.currentUserCode = code;
+
       // 방 정보에서 미션 활성화 여부 가져오기
       let missionActive = false;
       try {
@@ -76,6 +70,9 @@
       } catch (e) {
         console.warn("방 정보 불러오기 실패", e);
       }
+
+      // 전역 변수로 미션 상태 저장 (missionActive 설정 후)
+      window.currentMissionActive = missionActive;
 
       // 미션 탭 표시 여부 결정
       const missionTabBtn = document.getElementById("missionsTabBtn");
@@ -111,9 +108,17 @@
             const code = p.code?.S || p.code || "----";
             const pt = p.points?.N || p.points || "0";
             const gender = p.gender?.S || p.gender || "-";
+            const genderIcon = gender === "M" ? "👨" : gender === "F" ? "👩" : "👤";
+            const genderText = gender === "M" ? "남자" : gender === "F" ? "여자" : "";
             const el = document.createElement("div");
-            el.className = "card-item";
-            el.textContent = `👤 ${name} (#${code}) · ${gender} · ${pt}점`;
+            // 성별에 따른 클래스 추가
+            const genderClass = gender === "M" ? "participant-male" : gender === "F" ? "participant-female" : "";
+            el.className = `card-item ${genderClass}`;
+            // 본인인지 확인
+            const isMe = (code === window.currentUserCode);
+            const pointsDisplay = isMe ? `<strong style="color: #FFD700; font-size: 1.3em; font-weight: bold; text-shadow: 0 0 10px #FFD700;">${pt}점</strong>` : "";
+
+            el.innerHTML = `${genderIcon} ${name} (#${code}) · ${genderText}${pointsDisplay ? ` · ${pointsDisplay}` : ""}`;
             div.appendChild(el);
           });
         } catch (err) {
@@ -136,32 +141,21 @@
           }
 
           let completedCount = 0;
-          
+
           missions.forEach((m) => {
-            // 람다에서 반환하는 done 필드만 사용
-            const isCompleted = m.done === true;
-            if (isCompleted) completedCount++;
-            
-            console.log("🎯 미션 정보:", JSON.stringify({
-              id: m.id,
-              title: m.title,
-              done: m.done,
-              isCompleted,
-              rawData: m
-            }, null, 2));
-            
+            // 완료된 미션 수 계산
+            if (m.done) {
+              completedCount++;
+            }
+
             const section = document.createElement("div");
-            section.className = `card-item ${isCompleted ? 'mission-completed' : ''}`;
+            section.className = `mission-card${m.done ? " mission-completed" : ""}`;
             section.innerHTML = `
-              <h4>${m.title} <span class="points">${m.points}점</span></h4>
-              <p>${m.description || ''}</p>
-              <div class="mission-action">
-                ${isCompleted ? `
-                  <div class="mission-completed-badge">
-                    <span class="completed-text">✅ 완료됨</span>
-                  </div>
-                ` : `
-                  <input type="text" placeholder="상대 코드 입력" id="input-${m.id}" />
+              <h4 style="margin-bottom: 8px; font-size: 16px; font-weight: bold;">${m.title} (${m.points}점)</h4>
+              <p style="margin-bottom: 16px; line-height: 1.4; opacity: 0.9;">${m.description}</p>
+              <div style="margin-top: 12px;">
+                ${m.done ? "✅ 완료됨" : `
+                  <input type="text" placeholder="상대 코드 입력" id="input-${m.id}" style="margin-bottom: 8px;" />
                   <button class="btn-small" onclick="submitMission('${m.id}')">제출</button>
                 `}
               </div>
@@ -169,8 +163,19 @@
             div.appendChild(section);
           });
 
-          // 미션 진행도 업데이트
-          console.log("🎯 미션 진행도:", completedCount, "/", missions.length);
+          // 미션 진행률 섹션 추가 (하단에)
+          const progressSection = document.createElement("div");
+          progressSection.className = "mission-progress-section";
+          progressSection.innerHTML = `
+            <h3>미션 진행률</h3>
+            <div class="progress-text">완료: <span id="completedCount">0</span> / ${missions.length}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="missionProgressFill"></div>
+            </div>
+          `;
+          div.appendChild(progressSection);
+
+          // 진행률 업데이트
           updateMissionProgress(completedCount, missions.length);
         } catch (err) {
           console.error(err);
@@ -178,29 +183,16 @@
         }
       }
 
-      // 미션 진행도 업데이트 함수
+      // 미션 진행률 업데이트 함수
       function updateMissionProgress(completed, total) {
-        console.log("📊 진행도 업데이트 호출:", completed, total);
-        
-        const progressText = document.getElementById("missionProgressText");
-        const progressBar = document.getElementById("missionProgressBar");
+        const completedEl = document.getElementById("completedCount");
         const progressFill = document.getElementById("missionProgressFill");
-        
-        console.log("📋 요소 확인:", {
-          progressText: !!progressText,
-          progressBar: !!progressBar,
-          progressFill: !!progressFill
-        });
-        
-        if (progressText) {
-          progressText.textContent = `${completed} / ${total} 완료`;
-          console.log("✅ 진행도 텍스트 업데이트:", progressText.textContent);
-        }
-        
+
+        if (completedEl) completedEl.textContent = completed;
+
         if (progressFill && total > 0) {
           const percentage = (completed / total) * 100;
           progressFill.style.width = `${percentage}%`;
-          console.log("✅ 진행도 바 업데이트:", `${percentage}%`);
         } else if (progressFill) {
           progressFill.style.width = "0%";
         }
@@ -213,7 +205,7 @@
         try {
           const payload = { roomId, missionId, phone, targetCode: codeInput };
           const res = await callAPI("/missions/submit", "POST", payload);
-          alert("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점");
+          alert("미션 완료! +" + res.points + "점");
           loadMissions();
         } catch (err) {
           alert(err.message || "제출 실패");

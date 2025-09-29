@@ -42,13 +42,12 @@
           <input type="text" id="participantName" placeholder="닉네임을 입력하세요"/>
         </div>
         <div class="form-group">
-          <label for="gender">성별</label>
-          <select id="gender">
-            <option value="">선택하세요</option>
-            <option value="M">남성</option>
-            <option value="F">여성</option>
-            <option value="N">기타/선택안함</option>
-          </select>
+          <label>성별</label>
+          <div class="gender-buttons">
+            <button type="button" class="gender-btn" data-gender="M">남자</button>
+            <button type="button" class="gender-btn" data-gender="F">여자</button>
+          </div>
+          <input type="hidden" id="gender" />
         </div>
       </div>
 

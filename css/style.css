@@ -398,10 +398,12 @@ small {
 }
 
 .room-item.selected {
-  border-color: #ff6b6b;
-  background: rgba(255, 107, 107, 0.2);
+  border-color: #0984e3;
+  background: #0984e3;
   font-weight: bold;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btn-back {
@@ -724,7 +726,7 @@ small {
 
 /* 미션 완료 상태 스타일 */
 .mission-completed,
-.card-item.mission-completed {
+.mission-card.mission-completed {
   opacity: 0.6;
   background: rgba(128, 128, 128, 0.1) !important;
   border: 2px solid rgba(128, 128, 128, 0.3);
@@ -732,8 +734,8 @@ small {
 
 .mission-completed input,
 .mission-completed button,
-.card-item.mission-completed input,
-.card-item.mission-completed button {
+.mission-card.mission-completed input,
+.mission-card.mission-completed button {
   pointer-events: none;
   opacity: 0.5;
   cursor: not-allowed;
@@ -774,7 +776,8 @@ small {
 
 /* 미션 진행도 스타일 */
 .mission-progress-section {
-  margin-top: 24px;
+  margin-top: 30px;
+  margin-bottom: 20px;
   padding: 20px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
@@ -830,6 +833,54 @@ small {
   100% { transform: translateX(100%); }
 }
 
+/* 성별 선택 버튼 스타일 */
+.gender-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.gender-btn {
+  flex: 1;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gender-btn:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.gender-btn.selected {
+  background: #0984e3;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 참여자 성별별 구분 스타일 */
+.participant-male,
+.participant-item.participant-male,
+.card-item.participant-male {
+  border-left: 4px solid #4A90E2 !important;
+  background: linear-gradient(90deg, rgba(74, 144, 226, 0.1), rgba(255, 255, 255, 0.15)) !important;
+}
+
+.participant-female,
+.participant-item.participant-female,
+.card-item.participant-female {
+  border-left: 4px solid #FF6B9D !important;
+  background: linear-gradient(90deg, rgba(255, 107, 157, 0.1), rgba(255, 255, 255, 0.15)) !important;
+}
+
 /* ================= 새로운 관리자 페이지 스타일 ================= */
 .admin-body {
   background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
@@ -840,6 +891,10 @@ small {
 }
 
 .admin-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -903,6 +958,8 @@ small {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-tab {
@@ -936,6 +993,7 @@ small {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-section {
@@ -1242,15 +1300,28 @@ small {
   .admin-main {
     padding: 20px 16px;
   }
-  
+
+  .admin-tabs {
+    flex-direction: column;
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .admin-tab {
+    padding: 12px 16px;
+    text-align: left;
+    border-radius: 8px;
+  }
+
   .rooms-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
-  
+
   .input-group {
     flex-direction: column;
   }
-  
+
   .admin-body .room-controls {
     flex-direction: column;
   }

@@ -11,7 +11,7 @@
     <!-- 헤더 -->
     <header class="admin-header">
       <div class="admin-header-content">
-        <button class="btn-back" onclick="location.href='index.html'">
+        <button class="btn-back" onclick="goBackWithTransition()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -60,17 +60,6 @@
       event.target.classList.add('active');
     }
 
-    async function toggleMission(roomId, isActive) {
-      try {
-        await callAPI("/admin/missions/active", "POST", {
-          roomId,
-          active: isActive,
-        });
-        alert(`미션 ${isActive ? "활성화" : "비활성화"} 완료`);
-      } catch (err) {
-        alert("에러: " + err.message);
-      }
-    }
 
     // fetchRooms는 admin.js의 DOMContentLoaded에서 자동 호출됨
   </script>

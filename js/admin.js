@@ -62,19 +62,142 @@ async function createRoom() {
   async function fetchRooms() {
     await fetchRoomsInternal();
   }
-  
+
+  // 방 미션 상태를 부드럽게 업데이트하는 함수
+  async function updateRoomMissionStatus(roomId, isActive) {
+    // 모든 방 카드를 순회하며 해당 roomId를 찾기
+    const roomCards = document.querySelectorAll('.room-card');
+    let targetCard = null;
+
+    for (const card of roomCards) {
+      // 여러 방법으로 roomId 찾기
+      if (card.dataset.roomId === roomId ||
+          card.querySelector(`[id="count-${roomId}"]`) ||
+          card.textContent.includes(roomId)) {
+        targetCard = card;
+        break;
+      }
+    }
+
+    if (targetCard) {
+      const toggleBtn = targetCard.querySelector('.btn-mission');
+
+      // 버튼 상태는 이미 toggleMissionFromButton에서 업데이트되었으므로 애니메이션만
+      if (toggleBtn && toggleBtn.dataset.currentState !== String(isActive)) {
+        toggleBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          toggleBtn.style.transform = 'scale(1)';
+        }, 150);
+      }
+
+      // 미션 상태 텍스트 업데이트
+      const statusElement = targetCard.querySelector('.mission-active, .mission-inactive');
+      if (statusElement) {
+        statusElement.textContent = isActive ? '🎯 미션 활성' : '⚪ 미션 비활성';
+        statusElement.className = `value ${isActive ? 'mission-active' : 'mission-inactive'}`;
+      }
+    } else {
+      console.warn(`Room card not found for roomId: ${roomId}`);
+    }
+  }
+
+  // 토스트 알림 함수
+  function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+      existingToast.remove();
+    }
+
+    // 토스트 생성
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    // 스타일 적용
+    Object.assign(toast.style, {
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      padding: '12px 20px',
+      borderRadius: '8px',
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: '14px',
+      zIndex: '1000',
+      transform: 'translateX(100%)',
+      transition: 'transform 0.3s ease',
+      maxWidth: '300px',
+      wordWrap: 'break-word'
+    });
+
+    // 타입별 색상
+    const colors = {
+      success: '#4CAF50',
+      error: '#f44336',
+      info: '#2196F3'
+    };
+    toast.style.backgroundColor = colors[type] || colors.info;
+
+    document.body.appendChild(toast);
+
+    // 애니메이션
+    setTimeout(() => {
+      toast.style.transform = 'translateX(0)';
+    }, 100);
+
+    // 자동 제거
+    setTimeout(() => {
+      toast.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 3000);
+  }
+
+  // 뒤로가기 부드러운 전환 함수
+  function goBackWithTransition() {
+    // 페이드 아웃 효과
+    document.body.style.transition = 'opacity 0.3s ease';
+    document.body.style.opacity = '0';
+
+    setTimeout(() => {
+      location.href = 'index.html';
+    }, 300);
+  }
+
+  // 버튼에서 미션 토글 (현재 상태를 버튼 data에서 읽어옴)
+  function toggleMissionFromButton(button) {
+    const roomId = button.dataset.roomId;
+    const currentState = button.dataset.currentState === 'true';
+    const newState = !currentState;
+
+    // 버튼의 현재 상태를 즉시 업데이트
+    button.dataset.currentState = newState;
+    button.textContent = newState ? '미션 비활성화' : '미션 활성화';
+    button.classList.toggle('active', newState);
+
+    // API 호출
+    toggleMission(roomId, newState);
+  }
+
   async function toggleMission(roomId, isActive) {
     try {
+      // API 호출
       await callAPI("/admin/missions/active", "POST", {
         roomId,
         active: isActive,
       });
-      alert(`미션 ${isActive ? "활성화" : "비활성화"} 완료`);
-      
-      // 상태 변경 후 방 목록 새로고침
-      fetchRooms();
+
+      // 상태 업데이트 (약간의 지연을 두어 DOM이 완전히 업데이트되도록)
+      setTimeout(async () => {
+        await updateRoomMissionStatus(roomId, isActive);
+      }, 100);
+
+      // 사용자에게 부드러운 알림
+      showToast(`미션 ${isActive ? "활성화" : "비활성화"}되었습니다`, "success");
     } catch (err) {
-      alert("에러: " + err.message);
+      showToast("오류가 발생했습니다: " + err.message, "error");
     }
   }
   
@@ -115,12 +238,16 @@ async function createRoom() {
         const phone = p.phone?.S || p.phone || "";
         const code = p.code?.S || p.code || "";
         const points = p.points?.N || p.points || 0;
+        const gender = p.gender?.S || p.gender || "-";
+        const genderIcon = gender === "M" ? "👨" : gender === "F" ? "👩" : "👤";
+        const genderText = gender === "M" ? "남자" : gender === "F" ? "여자" : "";
+        const genderClass = gender === "M" ? "participant-male" : gender === "F" ? "participant-female" : "";
         
         return `
-          <div class="participant-item">
+          <div class="participant-item ${genderClass}">
             <div class="participant-info">
-              <strong>${nickname}</strong>
-              <span class="participant-code">#${code}</span>
+              <strong>${genderIcon} ${nickname}</strong>
+              <span class="participant-code">#${code} · ${genderText}</span>
               <span class="participant-points">포인트: ${points}점</span>
             </div>
             <div class="participant-actions">
@@ -190,6 +317,7 @@ async function createRoom() {
 
         const roomCard = document.createElement("div");
         roomCard.className = "room-card";
+        roomCard.dataset.roomId = id; // 방 ID를 data 속성으로 저장
 
         const missionStatus = missionActive ? "🎯 미션 활성" : "⚪ 미션 비활성";
         const missionClass = missionActive ? "mission-active" : "mission-inactive";
@@ -214,8 +342,10 @@ async function createRoom() {
           </div>
           
           <div class="room-controls">
-            <button class="btn-mission ${missionActive ? 'active' : ''}" 
-                    onclick="toggleMission('${id}', ${!missionActive})">
+            <button class="btn-mission ${missionActive ? 'active' : ''}"
+                    data-room-id="${id}"
+                    data-current-state="${missionActive}"
+                    onclick="toggleMissionFromButton(this)">
               ${missionActive ? '미션 비활성화' : '미션 활성화'}
             </button>
           </div>
@@ -273,11 +403,15 @@ async function createRoom() {
             const phone = p.phone?.S || p.phone || "";
             const code = p.code?.S || p.code || "";
             const points = p.points?.N || p.points || 0;
+            const gender = p.gender?.S || p.gender || "-";
+            const genderIcon = gender === "M" ? "👨" : gender === "F" ? "👩" : "👤";
+            const genderText = gender === "M" ? "남자" : gender === "F" ? "여자" : "";
+            const genderClass = gender === "M" ? "participant-male" : gender === "F" ? "participant-female" : "";
             
             return `
-              <div class="participant-item">
+              <div class="participant-item ${genderClass}">
                 <div class="participant-info">
-                  <div class="participant-code">${nickname} (코드: ${code})</div>
+                  <div class="participant-code">${genderIcon} ${nickname} (코드: ${code}) · ${genderText}</div>
                   <div class="participant-points">포인트: ${points}점</div>
                 </div>
                 <button class="btn-participant-delete" onclick="deleteParticipant('${roomId}', '${phone}', '${nickname}')">

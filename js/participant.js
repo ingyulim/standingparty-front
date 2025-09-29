@@ -53,6 +53,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     roomListDiv.textContent = "방 목록을 불러오는 중 오류가 발생했습니다.";
   }
 
+  // 🔸 성별 버튼 클릭 이벤트
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("gender-btn")) {
+      // 모든 성별 버튼에서 selected 클래스 제거
+      document.querySelectorAll(".gender-btn").forEach(btn => {
+        btn.classList.remove("selected");
+      });
+      
+      // 클릭된 버튼에 selected 클래스 추가
+      e.target.classList.add("selected");
+      
+      // hidden input에 값 설정
+      const genderInput = document.getElementById("gender");
+      if (genderInput) {
+        genderInput.value = e.target.dataset.gender;
+      }
+    }
+  });
+
   // 🔸 참여 제출
   joinForm.addEventListener("submit", async (e) => {
     e.preventDefault();
