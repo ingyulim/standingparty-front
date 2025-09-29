@@ -33,6 +33,15 @@
     <!-- 미션 -->
     <section id="tab-missions" class="tab-content glass-card hidden">
       <div id="missionList" class="list-box"></div>
+      
+      <!-- 미션 진행도 -->
+      <div class="mission-progress-section">
+        <h3>미션 진행도</h3>
+        <div class="progress-text" id="missionProgressText">0 / 0 완료</div>
+        <div class="progress-bar" id="missionProgressBar">
+          <div class="progress-fill" id="missionProgressFill"></div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -126,14 +135,32 @@
             return;
           }
 
+          let completedCount = 0;
+          
           missions.forEach((m) => {
+            // 람다에서 반환하는 done 필드만 사용
+            const isCompleted = m.done === true;
+            if (isCompleted) completedCount++;
+            
+            console.log("🎯 미션 정보:", JSON.stringify({
+              id: m.id,
+              title: m.title,
+              done: m.done,
+              isCompleted,
+              rawData: m
+            }, null, 2));
+            
             const section = document.createElement("div");
-            section.className = "card-item";
+            section.className = `card-item ${isCompleted ? 'mission-completed' : ''}`;
             section.innerHTML = `
-              <h4>${m.title} (${m.points}점)</h4>
-              <p>${m.description}</p>
-              <div>
-                ${m.done ? "✅ 완료됨" : `
+              <h4>${m.title} <span class="points">${m.points}점</span></h4>
+              <p>${m.description || ''}</p>
+              <div class="mission-action">
+                ${isCompleted ? `
+                  <div class="mission-completed-badge">
+                    <span class="completed-text">✅ 완료됨</span>
+                  </div>
+                ` : `
                   <input type="text" placeholder="상대 코드 입력" id="input-${m.id}" />
                   <button class="btn-small" onclick="submitMission('${m.id}')">제출</button>
                 `}
@@ -141,9 +168,41 @@
             `;
             div.appendChild(section);
           });
+
+          // 미션 진행도 업데이트
+          console.log("🎯 미션 진행도:", completedCount, "/", missions.length);
+          updateMissionProgress(completedCount, missions.length);
         } catch (err) {
           console.error(err);
           alert("미션 목록을 불러오지 못했습니다.");
+        }
+      }
+
+      // 미션 진행도 업데이트 함수
+      function updateMissionProgress(completed, total) {
+        console.log("📊 진행도 업데이트 호출:", completed, total);
+        
+        const progressText = document.getElementById("missionProgressText");
+        const progressBar = document.getElementById("missionProgressBar");
+        const progressFill = document.getElementById("missionProgressFill");
+        
+        console.log("📋 요소 확인:", {
+          progressText: !!progressText,
+          progressBar: !!progressBar,
+          progressFill: !!progressFill
+        });
+        
+        if (progressText) {
+          progressText.textContent = `${completed} / ${total} 완료`;
+          console.log("✅ 진행도 텍스트 업데이트:", progressText.textContent);
+        }
+        
+        if (progressFill && total > 0) {
+          const percentage = (completed / total) * 100;
+          progressFill.style.width = `${percentage}%`;
+          console.log("✅ 진행도 바 업데이트:", `${percentage}%`);
+        } else if (progressFill) {
+          progressFill.style.width = "0%";
         }
       }
 
@@ -154,7 +213,7 @@
         try {
           const payload = { roomId, missionId, phone, targetCode: codeInput };
           const res = await callAPI("/missions/submit", "POST", payload);
-          alert("미션 완료! +" + res.points + "점");
+          alert("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점");
           loadMissions();
         } catch (err) {
           alert(err.message || "제출 실패");

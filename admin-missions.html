@@ -65,7 +65,7 @@
           missions.forEach((m) => {
             const li = document.createElement("li");
             li.innerHTML = `
-              <b>${m.missionId}</b> - ${m.title} (${m.points}점)
+              <b>${m.title}</b> (${m.points}점)
               <br />${m.description || ""}
               <br />
               <button onclick='editMission(${JSON.stringify(m)})'>✏️ 수정</button>

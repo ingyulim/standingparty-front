@@ -1,3 +1,11 @@
+/* 커스텀 폰트 */
+@font-face {
+  font-family: 'BMJUA';
+  src: url('../assets/fonts/BMJUA_ttf.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -202,11 +210,54 @@ body {
 }
 
 .app-title {
-  font-size: 32px;
-  font-weight: 300;
-  letter-spacing: 2px;
-  margin: 0;
-  opacity: 0.95;
+  font-family: 'BMJUA', 'Cute Font', 'Gamja Flower', 'Single Day', cursive !important;
+  font-size: 56px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  margin: 20px 0 !important;
+  color: white !important;
+  text-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  display: block !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+  transform: none !important;
+  animation: glow 3s ease-in-out infinite alternate !important;
+  opacity: 1 !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: white !important;
+  background-clip: unset !important;
+}
+
+@keyframes glow {
+  0% { 
+    text-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      0 8px 16px rgba(0, 0, 0, 0.2),
+      0 12px 24px rgba(0, 0, 0, 0.1),
+      0 0 20px rgba(255, 255, 255, 0.1);
+  }
+  100% { 
+    text-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      0 8px 16px rgba(0, 0, 0, 0.2),
+      0 12px 24px rgba(0, 0, 0, 0.1),
+      0 0 30px rgba(255, 255, 255, 0.2),
+      0 0 40px rgba(255, 255, 255, 0.1);
+  }
+}
+
+@keyframes bounce {
+  0% { 
+    transform: rotate(-2deg) translateY(0px);
+  }
+  100% { 
+    transform: rotate(-1deg) translateY(-3px);
+  }
 }
 
 .btn {
@@ -641,7 +692,12 @@ small {
     padding: 20px 15px;
   }
   .heart-icon { font-size: 50px; }
-  .app-title { font-size: 28px; }
+  .app-title { 
+    font-size: 42px;
+    letter-spacing: 1px;
+    margin: 15px 0;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
   .btn { padding: 16px 20px; font-size: 15px; }
   
   .room-grid {
@@ -654,5 +710,572 @@ small {
   
   .room-controls {
     flex-direction: column;
+  }
+  
+  .mission-progress-section {
+    padding: 16px;
+    margin-top: 20px;
+  }
+  
+  .progress-text {
+    font-size: 14px;
+  }
+}
+
+/* 미션 완료 상태 스타일 */
+.mission-completed,
+.card-item.mission-completed {
+  opacity: 0.6;
+  background: rgba(128, 128, 128, 0.1) !important;
+  border: 2px solid rgba(128, 128, 128, 0.3);
+}
+
+.mission-completed input,
+.mission-completed button,
+.card-item.mission-completed input,
+.card-item.mission-completed button {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mission-completed h4 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mission-completed p {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mission-completed-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(76, 175, 80, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.completed-text {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.mission-action {
+  margin-top: 12px;
+}
+
+.points {
+  color: #74b9ff;
+  font-weight: bold;
+}
+
+/* 미션 진행도 스타일 */
+.mission-progress-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mission-progress-section h3 {
+  color: white;
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+.progress-text {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #74b9ff, #0984e3);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  width: 0%;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ================= 새로운 관리자 페이지 스타일 ================= */
+.admin-body {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.admin-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 */
+.admin-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0;
+}
+
+.admin-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 60px;
+}
+
+.admin-body .btn-back {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+}
+
+.admin-body .btn-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.admin-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+/* 탭 네비게이션 */
+.admin-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 20px;
+}
+
+.admin-tab {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 500;
+  padding: 16px 24px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tab:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-tab.active {
+  color: white;
+  border-bottom-color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 메인 컨텐츠 */
+.admin-main {
+  flex: 1;
+  padding: 32px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.admin-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 새 방 만들기 카드 */
+.create-room-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.create-room-form {
+  margin-bottom: 16px;
+}
+
+.input-group {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.room-input {
+  flex: 1;
+  padding: 16px 20px;
+  border: 2px solid #e0e6ed;
+  border-radius: 16px;
+  font-size: 16px;
+  color: #2d3748;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.room-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.room-input::placeholder {
+  color: #a0aec0;
+}
+
+.btn-create {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  border: none;
+  border-radius: 16px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(116, 185, 255, 0.4);
+  white-space: nowrap;
+}
+
+.btn-create:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(116, 185, 255, 0.6);
+}
+
+.result-message {
+  color: #4a5568;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* 방 목록 그리드 */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.admin-body .room-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.admin-body .room-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.admin-body .room-info h4,
+.admin-body .room-header h4 {
+  color: #1a202c;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-body .room-info h4:before {
+  content: "🏠";
+  font-size: 18px;
+}
+
+.admin-body .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-body .info-row:last-child {
+  border-bottom: none;
+  margin-bottom: 20px;
+}
+
+.admin-body .info-row strong {
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.admin-body .info-row span {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.admin-body .mission-active {
+  color: #38a169;
+  font-weight: 700;
+  background: rgba(56, 161, 105, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.admin-body .mission-inactive {
+  color: #e53e3e;
+  font-weight: 700;
+  background: rgba(229, 62, 62, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.admin-body .room-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.admin-body .btn-mission, 
+.admin-body .btn-participants, 
+.admin-body .btn-delete {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-body .btn-mission {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+}
+
+.admin-body .btn-mission:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(116, 185, 255, 0.4);
+}
+
+.admin-body .btn-participants {
+  background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+  color: white;
+}
+
+.admin-body .btn-participants:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 122, 234, 0.4);
+}
+
+.admin-body .btn-delete {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+}
+
+.admin-body .btn-delete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+}
+
+/* 참여자 섹션 */
+.admin-body .participants-section {
+  margin-top: 20px;
+  background: rgba(116, 185, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(116, 185, 255, 0.2);
+}
+
+.admin-body .participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-body .participants-header h5 {
+  color: #2d3748;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-body .btn-close {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: auto;
+  height: auto;
+}
+
+.admin-body .btn-close:hover {
+  background: #cbd5e0;
+}
+
+.admin-body .participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.admin-body .participant-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-body .participant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-body .participant-code {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.admin-body .participant-points {
+  font-size: 12px;
+  color: #718096;
+}
+
+.admin-body .btn-participant-delete {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-body .btn-participant-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(245, 101, 101, 0.4);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .admin-main {
+    padding: 20px 16px;
+  }
+  
+  .rooms-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  .admin-body .room-controls {
+    flex-direction: column;
+  }
+  
+  .admin-body .btn-mission, 
+  .admin-body .btn-participants, 
+  .admin-body .btn-delete {
+    width: 100%;
+  }
+  
+  .admin-body .participant-item {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .create-room-card {
+    padding: 24px;
+  }
+  
+  .admin-header-content {
+    padding: 12px 16px;
+  }
+  
+  .admin-tabs {
+    padding: 0 16px;
   }
 }

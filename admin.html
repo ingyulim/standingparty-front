@@ -6,58 +6,59 @@
   <title>관리자 페이지 - Standing Party</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
-<body>
-  <button class="btn-back" onclick="location.href='index.html'">← 뒤로</button>
-
-  <div class="container">
-    <div class="logo-section">
-      <div class="heart-container">
-        <div class="heart-icon">
-          <svg class="heart-with-ecg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-            <path class="heart-shape" d="M60,105 C60,105 20,70 20,45 C20,30 30,20 45,20 C52,20 58,25 60,30 C62,25 68,20 75,20 C90,20 100,30 100,45 C100,70 60,105 60,105 Z"/>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- 헤더 -->
+    <header class="admin-header">
+      <div class="admin-header-content">
+        <button class="btn-back" onclick="location.href='index.html'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-        </div>
+        </button>
+        <h1 class="admin-title">관리자</h1>
+        <div></div> <!-- spacer -->
       </div>
-      <h1 class="app-title">관리자</h1>
-    </div>
+    </header>
 
-    <!-- 탭 메뉴 -->
-    <nav class="tabs">
-      <button class="tab" onclick="switchTab('rooms')">방 관리</button>
-      <button class="tab" onclick="location.href='admin-missions.html'">미션 관리</button>
+    <!-- 탭 네비게이션 -->
+    <nav class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('rooms')">방 관리</button>
+      <button class="admin-tab" onclick="location.href='admin-missions.html'">미션 관리</button>
     </nav>
 
-    <!-- 방 관리 탭 -->
-    <section id="tab-rooms" class="tab-content">
+    <!-- 메인 컨텐츠 -->
+    <main class="admin-main">
       <!-- 새 방 만들기 섹션 -->
-      <div class="admin-card">
-        <h3>새 방 만들기</h3>
-        <form onsubmit="createRoom(); return false;" class="room-form">
-          <div class="form-group">
-            <input type="text" id="roomName" placeholder="방 번호 (숫자만)" required/>
-            <button type="submit" class="btn btn-primary">방 만들기</button>
-          </div>
-        </form>
-        <div id="result"></div>
-      </div>
+      <section class="admin-section">
+        <h2 class="section-title">새 방 만들기</h2>
+        <div class="create-room-card">
+          <form onsubmit="createRoom(); return false;" class="create-room-form">
+            <div class="input-group">
+              <input type="text" id="roomName" placeholder="방 번호 (숫자만)" required class="room-input"/>
+              <button type="submit" class="btn-create">방 만들기</button>
+            </div>
+          </form>
+          <div id="result" class="result-message"></div>
+        </div>
+      </section>
 
       <!-- 방 목록 섹션 -->
-      <div class="admin-card">
-        <h3>방 목록</h3>
-        <div id="roomList" class="room-grid"></div>
-      </div>
-    </section>
+      <section class="admin-section">
+        <h2 class="section-title">방 목록</h2>
+        <div id="roomList" class="rooms-grid"></div>
+      </section>
+    </main>
   </div>
 
   <script src="js/common.js"></script>
   <script src="js/admin.js"></script>
   <script>
-    function switchTab(name) {
-      document.querySelectorAll('.tab-content').forEach(div => div.classList.add('hidden'));
-      document.getElementById(`tab-${name}`).classList.remove('hidden');
+    function switchAdminTab(name) {
+      // 탭 버튼 활성화 상태 변경
+      document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
     }
-
-    // admin.js의 fetchRooms 함수를 사용하므로 제거
 
     async function toggleMission(roomId, isActive) {
       try {
