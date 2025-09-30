@@ -209,19 +209,15 @@ async function createRoom() {
     
     // 비밀번호 확인
     const password = prompt('관리자 비밀번호를 입력하세요:');
-    const storedPassword = localStorage.getItem('adminPassword') || 'admin123';
-    
-    if (password !== storedPassword) {
-      alert('비밀번호가 올바르지 않습니다.');
-      return;
-    }
+    if (!password) return;
     
     try {
-      await callAPI(`/rooms/${roomId}`, "DELETE");
-      alert("방이 삭제되었습니다.");
+      // 백엔드에서 비밀번호 확인 후 삭제
+      await callAPI(`/rooms/${roomId}`, "DELETE", { password });
+      showToast("방이 삭제되었습니다.", "success");
       fetchRooms(); // 목록 새로고침
     } catch (err) {
-      alert("방 삭제 실패: " + err.message);
+      showToast("방 삭제 실패: " + err.message, "error");
     }
   }
 
@@ -287,20 +283,16 @@ async function createRoom() {
     
     // 비밀번호 확인
     const password = prompt('관리자 비밀번호를 입력하세요:');
-    const storedPassword = localStorage.getItem('adminPassword') || 'admin123';
-    
-    if (password !== storedPassword) {
-      alert('비밀번호가 올바르지 않습니다.');
-      return;
-    }
+    if (!password) return;
     
     try {
-      await callAPI(`/participants/${roomId}/${phone}`, "DELETE");
-      alert(`참여자 ${nickname}이(가) 삭제되었습니다.`);
+      // 백엔드에서 비밀번호 확인 후 삭제
+      await callAPI(`/participants/${roomId}/${phone}`, "DELETE", { password });
+      showToast(`참여자 ${nickname}이(가) 삭제되었습니다.`, "success");
       loadParticipants(roomId); // 목록 새로고침
       loadParticipantCount(roomId); // 참여자 수 업데이트
     } catch (err) {
-      alert("참여자 삭제 실패: " + err.message);
+      showToast("참여자 삭제 실패: " + err.message, "error");
     }
   }
 

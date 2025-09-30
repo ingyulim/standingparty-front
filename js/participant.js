@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.type = "button";
         btn.className = "room-item";
         btn.dataset.id = id;
-        btn.textContent = createdAt ? `${title} (${createdAt})` : title;
+        btn.textContent = title;
 
         btn.onclick = () => {
           selectedRoomId = id;

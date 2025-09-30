@@ -38,6 +38,25 @@
 
   <script src="js/common.js"></script>
   <script>
+    // 토스트 알림 함수
+    function showToast(message, type = 'success') {
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       const params = new URLSearchParams(location.search);
       const roomId = params.get("roomId");
@@ -46,8 +65,8 @@
       const nickname = params.get("nickname");
 
       if (!roomId || !phone || !code || !nickname) {
-        alert("잘못된 접근입니다.");
-        location.href = "index.html";
+        showToast("잘못된 접근입니다.", "error");
+        setTimeout(() => location.href = "index.html", 1000);
         return;
       }
 
@@ -201,14 +220,18 @@
       window.submitMission = async (missionId) => {
         const input = document.getElementById(`input-${missionId}`);
         const codeInput = input?.value?.trim();
-        if (!codeInput) return alert("상대방 코드를 입력해주세요");
+        if (!codeInput) {
+          input.style.border = '2px solid #e53e3e';
+          setTimeout(() => { input.style.border = ''; }, 1000);
+          return;
+        }
         try {
           const payload = { roomId, missionId, phone, targetCode: codeInput };
           const res = await callAPI("/missions/submit", "POST", payload);
-          alert("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점");
+          showToast("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점", "success");
           loadMissions();
         } catch (err) {
-          alert(err.message || "제출 실패");
+          showToast(err.message || "제출 실패", "error");
         }
       };
     });

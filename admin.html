@@ -128,17 +128,6 @@
       checkLoginStatus();
     }
 
-    function confirmPassword(action, callback) {
-      const password = prompt('관리자 비밀번호를 입력하세요:');
-      // confirmPassword는 기존 로컬 검증 대신 서버 검증으로 바꾸려면 추가 작업 필요
-      const storedPassword = ''; // 삭제 또는 서버 검증으로 변경
-      if (password === storedPassword) {
-        callback();
-      } else if (password !== null) {
-        alert('비밀번호가 올바르지 않습니다.');
-      }
-    }
-
     function switchAdminTab(name) {
       // 탭 버튼 활성화 상태 변경
       document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));

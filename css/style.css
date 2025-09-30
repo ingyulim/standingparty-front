@@ -384,7 +384,7 @@ small {
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   font-size: 16px;
   color: white;
   transition: all 0.3s ease;
@@ -1470,4 +1470,52 @@ body .login-container {
   position: relative !important;
   margin: 0 auto !important;
   transform: none !important;
+}
+
+/* 토스트 알림 */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.success {
+  background: rgba(72, 187, 120, 0.95);
+}
+
+.toast.error {
+  background: rgba(229, 62, 62, 0.95);
+}
+
+/* 관리자 링크 */
+.admin-link {
+  display: block;
+  margin-top: 16px;
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
 }
