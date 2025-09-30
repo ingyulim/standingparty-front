@@ -205,7 +205,7 @@
         try {
           const payload = { roomId, missionId, phone, targetCode: codeInput };
           const res = await callAPI("/missions/submit", "POST", payload);
-          alert("미션 완료! +" + res.points + "점");
+          alert("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점");
           loadMissions();
         } catch (err) {
           alert(err.message || "제출 실패");

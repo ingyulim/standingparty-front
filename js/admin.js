@@ -207,6 +207,15 @@ async function createRoom() {
       return;
     }
     
+    // 비밀번호 확인
+    const password = prompt('관리자 비밀번호를 입력하세요:');
+    const storedPassword = localStorage.getItem('adminPassword') || 'admin123';
+    
+    if (password !== storedPassword) {
+      alert('비밀번호가 올바르지 않습니다.');
+      return;
+    }
+    
     try {
       await callAPI(`/rooms/${roomId}`, "DELETE");
       alert("방이 삭제되었습니다.");
@@ -273,6 +282,15 @@ async function createRoom() {
   // 참여자 삭제
   async function deleteParticipant(roomId, phone, nickname) {
     if (!confirm(`참여자 ${nickname}을(를) 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+    
+    // 비밀번호 확인
+    const password = prompt('관리자 비밀번호를 입력하세요:');
+    const storedPassword = localStorage.getItem('adminPassword') || 'admin123';
+    
+    if (password !== storedPassword) {
+      alert('비밀번호가 올바르지 않습니다.');
       return;
     }
     
