@@ -1076,9 +1076,9 @@ small {
 
 /* 방 목록 그리드 */
 .rooms-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .admin-body .room-card {
@@ -1095,6 +1095,7 @@ small {
   transform: translateY(-8px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
+
 
 .admin-body .room-info h4,
 .admin-body .room-header h4 {
@@ -1314,8 +1315,7 @@ small {
   }
 
   .rooms-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 
   .input-group {
