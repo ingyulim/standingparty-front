@@ -1163,6 +1163,7 @@ small {
 }
 
 .admin-body .btn-mission, 
+.admin-body .btn-bingo,
 .admin-body .btn-participants, 
 .admin-body .btn-delete {
   padding: 10px 20px;
@@ -1183,6 +1184,24 @@ small {
 .admin-body .btn-mission:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(116, 185, 255, 0.4);
+}
+
+.admin-body .btn-mission.active {
+  background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+}
+
+.admin-body .btn-bingo {
+  background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+  color: white;
+}
+
+.admin-body .btn-bingo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 104, 224, 0.4);
+}
+
+.admin-body .btn-bingo.active {
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
 }
 
 .admin-body .btn-participants {
@@ -1518,4 +1537,195 @@ body .login-container {
 .admin-link:hover {
   color: rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* 빙고 그리드 스타일 */
+.bingo-grid {
+  padding: 20px;
+}
+
+.bingo-grid h3 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.bingo-grid p {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.bingo-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.bingo-row {
+  display: flex;
+  gap: 8px;
+}
+
+.bingo-cell {
+  flex: 1;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  padding: 8px;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.bingo-cell:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.bingo-cell.completed {
+  background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+  border-color: #00b894;
+  color: #2d3436;
+}
+
+.bingo-cell.completed {
+  background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+  border-color: #00b894;
+  color: #2d3436;
+  font-size: 24px;
+  cursor: default;
+}
+
+.bingo-cell.completed:hover {
+  transform: none;
+}
+
+.bingo-cell.locked {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 20px;
+  cursor: not-allowed;
+}
+
+/* 빙고 미션 리스트 */
+.bingo-mission-list {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.bingo-mission-list h4 {
+  color: white;
+  font-size: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.bingo-mission-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.bingo-mission-item:not(.completed):hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateX(5px);
+}
+
+.bingo-mission-item.completed {
+  background: rgba(85, 239, 196, 0.2);
+  border-color: #55efc4;
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mission-number {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.bingo-mission-item.completed .mission-number {
+  background: #55efc4;
+  color: #2d3436;
+}
+
+.mission-text {
+  flex: 1;
+  color: white;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.bingo-mission-item.completed .mission-text {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.check-mark {
+  flex-shrink: 0;
+  font-size: 24px;
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+  .bingo-cell {
+    font-size: 16px;
+    padding: 4px;
+  }
+  
+  .bingo-row {
+    gap: 4px;
+  }
+  
+  .bingo-table {
+    gap: 4px;
+  }
+  
+  .bingo-mission-item {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .mission-number {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .mission-text {
+    font-size: 14px;
+  }
 }

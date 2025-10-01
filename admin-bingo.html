@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>빙고 관리 - Standing Party</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .container {
+      max-width: 1400px !important;
+    }
+
+    table#bingo-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 12px;
+      margin: 20px 0;
+      table-layout: fixed;
+    }
+    table#bingo-table td {
+      border: 2px solid #e2e8f0;
+      padding: 12px;
+      background: white;
+      vertical-align: top;
+      width: 20%;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    table#bingo-table textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+      resize: none;
+      min-height: 120px;
+      overflow-y: auto;
+      line-height: 1.6;
+      transition: border-color 0.2s ease;
+      word-break: keep-all;
+    }
+    table#bingo-table textarea:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+    
+    /* 데스크톱에서 더 크게 */
+    @media (min-width: 1200px) {
+      table#bingo-table textarea {
+        min-height: 150px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body class="admin-body">
+  <!-- 로그인 화면 -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-container">
+      <h1 class="login-title">관리자 인증</h1>
+      <form id="loginForm" class="login-form">
+        <input type="password" id="adminPassword" placeholder="관리자 비밀번호" required class="password-input"/>
+        <button type="submit" class="btn-login">로그인</button>
+      </form>
+      <div id="loginError" class="error-message"></div>
+    </div>
+  </div>
+
+  <!-- 관리자 메인 화면 -->
+  <div id="adminMain" class="admin-container" style="display: none;">
+    <button class="btn-back" onclick="location.href='admin.html'">← 관리자 홈으로</button>
+
+    <div class="container">
+      <h1 class="section-title">🎯 빙고 관리</h1>
+
+      <form id="bingoForm" onsubmit="uploadBingo(); return false;">
+        <div class="form-group">
+          <label for="bingo-title">빙고 제목</label>
+          <input type="text" id="bingo-title" required />
+        </div>
+        <div class="form-group">
+          <label for="bingo-description">빙고 설명</label>
+          <textarea id="bingo-description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>빙고판 (5x5 칸)</label>
+          <table id="bingo-table"><tbody></tbody></table>
+        </div>
+        <button type="submit" class="btn btn-primary">💾 빙고 등록</button>
+      </form>
+
+      <div id="bingo-result" class="result-message"></div>
+    </div>
+  </div>
+
+  <!-- 공통 JS -->
+  <script src="js/common.js"></script>
+  <script src="js/admin-bingo.js"></script>
+
+  <script>
+    function checkLoginStatus() {
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      const loginScreen = document.getElementById('loginScreen');
+      const adminMain = document.getElementById('adminMain');
+      
+      if (isLoggedIn) {
+        loginScreen.style.setProperty('display', 'none', 'important');
+        adminMain.style.setProperty('display', 'block', 'important');
+      } else {
+        loginScreen.style.setProperty('display', 'block', 'important');
+        adminMain.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById('adminPassword').value;
+
+      try {
+        const res = await fetch('https://ul4jxnpezi.execute-api.ap-northeast-2.amazonaws.com/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          localStorage.setItem('adminLoggedIn', 'true');
+          
+          const loginScreen = document.getElementById('loginScreen');
+          const adminMain = document.getElementById('adminMain');
+          
+          loginScreen.style.setProperty('display', 'none', 'important');
+          adminMain.style.setProperty('display', 'block', 'important');
+          
+          document.getElementById('loginError').textContent = '';
+          document.getElementById('adminPassword').value = '';
+        } else {
+          document.getElementById('loginError').textContent = '❌ 비밀번호가 올바르지 않습니다.';
+          document.getElementById('loginError').style.display = 'block';
+        }
+      } catch (err) {
+        console.error('로그인 오류:', err);
+        document.getElementById('loginError').textContent = '서버 오류가 발생했습니다.';
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkLoginStatus();
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+      // 5x5 테이블 생성
+      const tbody = document.querySelector('#bingo-table tbody');
+      for (let i = 0; i < 5; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < 5; j++) {
+          const cell = document.createElement('td');
+          const textarea = document.createElement('textarea');
+          textarea.id = `cell-${i}-${j}`;
+          textarea.placeholder = `(${i + 1},${j + 1})`;
+          
+          cell.appendChild(textarea);
+          row.appendChild(cell);
+        }
+        tbody.appendChild(row);
+      }
+    });
+  </script>
+</body>
+</html>

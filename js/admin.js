@@ -200,6 +200,43 @@ async function createRoom() {
       showToast("오류가 발생했습니다: " + err.message, "error");
     }
   }
+
+  // 빙고 토글 버튼에서 호출
+  function toggleBingoFromButton(button) {
+    const roomId = button.dataset.roomId;
+    const currentState = button.dataset.currentState === 'true';
+    const newState = !currentState;
+
+    // 버튼의 현재 상태를 즉시 업데이트
+    button.dataset.currentState = newState;
+    button.textContent = newState ? '빙고 비활성화' : '빙고 활성화';
+    button.classList.toggle('active', newState);
+
+    // API 호출
+    toggleBingo(roomId, newState);
+  }
+
+  async function toggleBingo(roomId, isActive) {
+    try {
+      console.log(`빙고 토글: roomId=${roomId}, isActive=${isActive}`);
+      // API 호출
+      const response = await callAPI("/bingo/active", "POST", {
+        roomId,
+        bingoActive: isActive,
+      });
+      console.log("빙고 토글 응답:", response);
+
+      // 방 목록 새로고침하여 최신 상태 반영
+      setTimeout(() => {
+        fetchRooms();
+      }, 500);
+
+      showToast(`빙고 ${isActive ? "활성화" : "비활성화"}되었습니다`, "success");
+    } catch (err) {
+      console.error("빙고 활성화 오류:", err);
+      showToast("빙고 활성화 오류: " + err.message, "error");
+    }
+  }
   
   // 방 삭제 함수
   async function deleteRoom(roomId) {
@@ -301,6 +338,8 @@ async function createRoom() {
   window.showParticipants = showParticipants;
   window.hideParticipants = hideParticipants;
   window.deleteParticipant = deleteParticipant;
+  window.toggleMissionFromButton = toggleMissionFromButton;
+  window.toggleBingoFromButton = toggleBingoFromButton;
   
   // fetchRooms 내부 함수들을 전역으로 노출
   let loadParticipantCount, loadParticipants;
@@ -324,6 +363,8 @@ async function createRoom() {
       const renderRoomCard = (room) => {
         const { id, name: roomName, title } = room;
         const missionActive = room.missionActive === true || room.missionActive === "true";
+        const bingoActive = room.bingoActive === true || room.bingoActive === "true";
+        console.log(`방 ${id}: missionActive=${missionActive}, bingoActive=${bingoActive}`);
 
         const roomCard = document.createElement("div");
         roomCard.className = "room-card";
@@ -357,6 +398,12 @@ async function createRoom() {
                     data-current-state="${missionActive}"
                     onclick="toggleMissionFromButton(this)">
               ${missionActive ? '미션 비활성화' : '미션 활성화'}
+            </button>
+            <button class="btn-bingo ${bingoActive ? 'active' : ''}"
+                    data-room-id="${id}"
+                    data-current-state="${bingoActive}"
+                    onclick="toggleBingoFromButton(this)">
+              ${bingoActive ? '빙고 비활성화' : '빙고 활성화'}
             </button>
           </div>
           
