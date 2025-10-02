@@ -32,18 +32,80 @@
     </section>
 
     <section id="tab-missions" class="tab-content glass-card hidden">
+      <div class="my-points-section">
+        <h3>내 포인트</h3>
+        <div class="points-display" id="myPoints">0점</div>
+      </div>
+      <div id="missionList" class="list-box"></div>
       <div class="mission-progress-section">
         <div class="progress-text" id="missionProgressText">0 / 0 완료</div>
         <div class="progress-bar">
           <div class="progress-fill" id="missionProgressFill"></div>
         </div>
       </div>
-      <div id="missionList" class="list-box"></div>
     </section>
 
     <section id="tab-bingo" class="tab-content glass-card hidden">
       <div id="bingoGrid" class="bingo-grid"></div>
     </section>
+  </div>
+
+  <!-- 미션 제출 모달 -->
+  <div id="missionModal" class="modal-overlay" style="display: none !important;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="missionModalTitle">미션</h3>
+        <button class="modal-close" onclick="closeMissionModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-question">
+          <p id="missionModalDescription"></p>
+        </div>
+        <div class="modal-input-group">
+          <label>상대방 코드</label>
+          <input type="text" id="missionModalCode" placeholder="상대방 코드를 입력하세요..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeMissionModal()">취소</button>
+        <button class="btn-modal-submit" onclick="submitMissionAnswer()">제출</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 빙고 미션 제출 모달 -->
+  <div id="bingoModal" class="modal-overlay" style="display: none !important;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalTitle">미션</h3>
+        <button class="modal-close" onclick="closeBingoModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-question">
+          <p id="modalQuestion"></p>
+        </div>
+        <div class="modal-input-group">
+          <label>답변</label>
+          <textarea id="modalAnswer" placeholder="답변을 입력하세요..." rows="4"></textarea>
+        </div>
+        <div class="modal-input-group">
+          <label>
+            <input type="checkbox" id="modalPhotoRequired" disabled /> 사진 첨부 필요
+          </label>
+          <input type="file" id="modalPhoto" accept="image/*" style="display: none;" />
+          <button id="photoUploadBtn" class="btn-photo-upload" style="display: none;">
+            📷 사진 첨부
+          </button>
+          <div id="photoPreview" style="display: none; margin-top: 8px;">
+            <img id="photoPreviewImg" style="max-width: 100%; border-radius: 8px;" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeBingoModal()">취소</button>
+        <button class="btn-modal-submit" onclick="submitBingoAnswer()">제출</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/common.js"></script>
@@ -205,13 +267,26 @@
               ${shuffledMissions.map((item, index) => {
                 const { mission, row, col, position } = item;
                 const isCompleted = completed.includes(position);
-                const missionText = mission || '';
-                const escapedMission = missionText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
+                // mission이 객체인 경우 처리
+                let missionTitle, missionQuestion;
+                if (typeof mission === 'object' && mission !== null) {
+                  missionTitle = mission.title || '';
+                  missionQuestion = mission.question || '';
+                } else {
+                  missionTitle = mission || '';
+                  missionQuestion = '';
+                }
+                
+                const escapedTitle = String(missionTitle).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const escapedQuestion = String(missionQuestion).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const displayText = missionQuestion ? `${missionTitle} - ${missionQuestion}` : missionTitle;
+                
                 return `
                   <div class="bingo-mission-item ${isCompleted ? 'completed' : ''}"
-                    ${isCompleted ? '' : `onclick="completeBingoMission(${row}, ${col}, '${escapedMission}')" style="cursor: pointer;"`}>
+                    ${isCompleted ? '' : `onclick="completeBingoMission(${row}, ${col}, '${escapedTitle}', '${escapedQuestion}')" style="cursor: pointer;"`}>
                     <div class="mission-number">#${index + 1}</div>
-                    <div class="mission-text">${missionText}</div>
+                    <div class="mission-text">${missionTitle}</div>
                     <div class="check-mark">${isCompleted ? '✅' : '⭕'}</div>
                   </div>
                 `;
@@ -224,10 +299,65 @@
         }
       }
 
-      // 빙고 미션 완료
-      window.completeBingoMission = async (row, col, mission) => {
-        const answer = prompt(`미션을 완료하셨나요?\n\n"${mission}"\n\n완료 내용을 간단히 입력해주세요:`);
-        if (!answer) return;
+      // 모달 관련 전역 변수
+      let currentBingoMission = null;
+
+      // 빙고 미션 모달 열기
+      window.completeBingoMission = (row, col, title, question, photoRequired = false) => {
+        currentBingoMission = { row, col, title, question };
+        
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalQuestion').textContent = question || '미션을 완료하셨나요?';
+        document.getElementById('modalAnswer').value = '';
+        document.getElementById('modalPhotoRequired').checked = photoRequired;
+        document.getElementById('photoUploadBtn').style.display = photoRequired ? 'block' : 'none';
+        document.getElementById('photoPreview').style.display = 'none';
+        
+        const modal = document.getElementById('bingoModal');
+        modal.style.setProperty('display', 'flex', 'important');
+      };
+
+      // 모달 닫기
+      window.closeBingoModal = () => {
+        const modal = document.getElementById('bingoModal');
+        modal.style.setProperty('display', 'none', 'important');
+        currentBingoMission = null;
+      };
+
+      // 사진 첨부 버튼 클릭
+      window.openPhotoUpload = () => {
+        document.getElementById('modalPhoto').click();
+      };
+
+      // 사진 선택 시 미리보기
+      document.addEventListener('DOMContentLoaded', () => {
+        const photoInput = document.getElementById('modalPhoto');
+        if (photoInput) {
+          photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                document.getElementById('photoPreviewImg').src = event.target.result;
+                document.getElementById('photoPreview').style.display = 'block';
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+        }
+      });
+
+      // 빙고 답변 제출
+      window.submitBingoAnswer = async () => {
+        if (!currentBingoMission) return;
+
+        const answer = document.getElementById('modalAnswer').value.trim();
+        if (!answer) {
+          showToast("답변을 입력해주세요", "error");
+          return;
+        }
+
+        const { row, col } = currentBingoMission;
 
         try {
           console.log("🎯 빙고 미션 제출:", { roomId, phone, row, col, answer });
@@ -239,6 +369,8 @@
             answer
           });
           console.log("✅ 빙고 제출 응답:", result);
+          
+          closeBingoModal();
           showToast("빙고 미션 완료! 칸이 열렸습니다 🎉", "success");
           loadBingo();
         } catch (err) {
@@ -271,6 +403,15 @@
             const genderClass = gender === "M" ? "participant-male" : gender === "F" ? "participant-female" : "";
             el.className = `card-item ${genderClass}`;
             const isMe = (code === window.currentUserCode);
+            
+            // 본인인 경우 미션 탭에 점수 표시
+            if (isMe) {
+              const myPointsEl = document.getElementById('myPoints');
+              if (myPointsEl) {
+                myPointsEl.textContent = pt + '점';
+              }
+            }
+            
             // 미션이 활성화되어 있을 때만 본인 점수 표시
             const pointsDisplay = (isMe && window.currentMissionActive) ? `<strong style="color: #FFD700; font-size: 1.3em; font-weight: bold; text-shadow: 0 0 10px #FFD700;">${pt}점</strong>` : "";
 
@@ -284,13 +425,17 @@
 
       async function loadMissions() {
         try {
-          const missions = await callAPI(`/missions/my?roomId=${roomId}&phone=${phone}`, "GET");
-          console.log("🎯 미션 데이터:", missions);
+          const data = await callAPI(`/missions/my?roomId=${roomId}&phone=${phone}`, "GET");
+          console.log("🎯 미션 데이터:", data);
+          
+          // data가 배열인지 확인하고, 아니면 배열로 변환
+          const missions = Array.isArray(data) ? data : (data?.missions || []);
+          console.log("🎯 파싱된 미션:", missions);
           
           const missionList = document.getElementById("missionList");
           missionList.innerHTML = "";
           
-          if (!missions || missions.length === 0) {
+          if (!Array.isArray(missions) || missions.length === 0) {
             missionList.innerHTML = "<p>등록된 미션이 없습니다.</p>";
             document.getElementById("missionCount").textContent = "0";
             return;
@@ -299,27 +444,27 @@
           document.getElementById("missionCount").textContent = missions.length;
 
           let completedCount = 0;
-          missions.forEach((m) => {
+          missions.forEach((m, index) => {
             const isDone = m.done === true || m.completed === true || m.status === 'completed';
             if (isDone) completedCount++;
 
             const missionDiv = document.createElement("div");
-            missionDiv.className = `mission-box ${isDone ? 'mission-completed' : ''}`;
+            missionDiv.className = `bingo-mission-item ${isDone ? 'completed' : ''}`;
             
             missionDiv.innerHTML = `
-              <div class="mission-header">
-                <strong>${m.title}</strong>
-                <span class="points">${m.points >= 0 ? '+' : ''}${m.points}점</span>
+              <div class="mission-number">#${index + 1}</div>
+              <div class="mission-text">
+                <div style="font-weight: bold;">${m.title}</div>
+                <div style="font-size: 13px; color: #FFD700; margin-top: 4px;">${m.points >= 0 ? '+' : ''}${m.points}점</div>
               </div>
-              <p>${m.description || ''}</p>
-              ${isDone 
-                ? '<div class="mission-completed-badge"><span class="completed-text">✅ 완료됨</span></div>'
-                : `<div class="mission-input-group">
-                     <input type="text" id="input-${m.id}" placeholder="상대방 코드 입력" />
-                     <button onclick="submitMission('${m.id}')">제출</button>
-                   </div>`
-              }
+              <div class="check-mark">${isDone ? '✅' : '⭕'}</div>
             `;
+            
+            // 미완료 미션은 클릭 가능하도록
+            if (!isDone) {
+              missionDiv.style.cursor = 'pointer';
+              missionDiv.onclick = () => openMissionModal(m);
+            }
             missionList.appendChild(missionDiv);
           });
 
@@ -344,20 +489,62 @@
         }
       }
 
-      window.submitMission = async (missionId) => {
-        const input = document.getElementById(`input-${missionId}`);
-        const codeInput = input?.value?.trim();
+      // 미션 모달 관련 전역 변수
+      let currentMission = null;
+
+      // 미션 모달 열기
+      window.openMissionModal = (mission) => {
+        currentMission = mission;
+        
+        document.getElementById('missionModalTitle').textContent = mission.title;
+        document.getElementById('missionModalDescription').textContent = mission.description || '상대방 코드를 입력하세요';
+        document.getElementById('missionModalCode').value = '';
+        
+        const modal = document.getElementById('missionModal');
+        modal.style.setProperty('display', 'flex', 'important');
+      };
+
+      // 미션 모달 닫기
+      window.closeMissionModal = () => {
+        const modal = document.getElementById('missionModal');
+        modal.style.setProperty('display', 'none', 'important');
+        currentMission = null;
+      };
+
+      // 미션 답변 제출
+      window.submitMissionAnswer = async () => {
+        if (!currentMission) return;
+
+        const codeInput = document.getElementById('missionModalCode').value.trim();
         if (!codeInput) {
-          input.style.border = '2px solid #e53e3e';
-          setTimeout(() => { input.style.border = ''; }, 1000);
+          showToast("상대방 코드를 입력해주세요", "error");
           return;
         }
+
         try {
-          const payload = { roomId, missionId, phone, targetCode: codeInput };
+          // missionId 앞에 mission- prefix 추가
+          const missionIdWithPrefix = currentMission.id.startsWith('mission-') 
+            ? currentMission.id 
+            : `mission-${currentMission.id}`;
+          
+          const payload = { roomId, missionId: missionIdWithPrefix, phone, targetCode: codeInput };
+          console.log("🎯 미션 제출:", payload);
           const res = await callAPI("/missions/submit", "POST", payload);
+          console.log("✅ 미션 제출 응답:", res);
+          
+          // 즉시 포인트 업데이트 (서버 재요청 없이)
+          const myPointsEl = document.getElementById('myPoints');
+          if (myPointsEl) {
+            const currentPoints = parseInt(myPointsEl.textContent) || 0;
+            const newPoints = currentPoints + (res.points || 0);
+            myPointsEl.textContent = newPoints + '점';
+          }
+          
+          closeMissionModal();
           showToast("미션 완료! " + (res.points >= 0 ? "+" : "") + res.points + "점", "success");
           loadMissions();
         } catch (err) {
+          console.error("❌ 미션 제출 실패:", err);
           showToast(err.message || "제출 실패", "error");
         }
       };

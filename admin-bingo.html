@@ -6,53 +6,83 @@
   <title>빙고 관리 - Standing Party</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    .container {
-      max-width: 1400px !important;
+    .container { 
+      max-width: 1400px !important; 
     }
-
-    table#bingo-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 12px;
-      margin: 20px 0;
-      table-layout: fixed;
+    
+    #bingo-table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 16px; 
+      margin: 24px 0; 
+      table-layout: fixed; 
     }
-    table#bingo-table td {
-      border: 2px solid #e2e8f0;
-      padding: 12px;
+    
+    #bingo-table td { 
+      border: 2px solid #cbd5e0; 
+      padding: 16px; 
+      background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+      vertical-align: top; 
+      width: 20%; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      transition: all 0.3s ease;
+    }
+    
+    #bingo-table td:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+    
+    #bingo-table input {
+      width: 100%; 
+      box-sizing: border-box; 
+      font-size: 15px;
+      font-weight: 600;
+      border: 2px solid #e2e8f0; 
+      border-radius: 8px; 
+      padding: 10px 12px; 
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
       background: white;
-      vertical-align: top;
-      width: 20%;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
-    table#bingo-table textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #cbd5e0;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      box-sizing: border-box;
-      resize: none;
-      min-height: 120px;
-      overflow-y: auto;
-      line-height: 1.6;
-      transition: border-color 0.2s ease;
-      word-break: keep-all;
-    }
-    table#bingo-table textarea:focus {
+    
+    #bingo-table input:focus {
       outline: none;
       border-color: #4a90e2;
       box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
     }
     
-    /* 데스크톱에서 더 크게 */
-    @media (min-width: 1200px) {
-      table#bingo-table textarea {
-        min-height: 150px;
-        font-size: 15px;
-      }
+    #bingo-table textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      resize: none;
+      min-height: 90px;
+      line-height: 1.6;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      background: white;
+    }
+    
+    #bingo-table textarea:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+    
+    .section-title {
+      margin-bottom: 8px;
+    }
+    
+    .form-group label {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
     }
   </style>
 </head>
@@ -75,7 +105,6 @@
 
     <div class="container">
       <h1 class="section-title">🎯 빙고 관리</h1>
-
       <form id="bingoForm" onsubmit="uploadBingo(); return false;">
         <div class="form-group">
           <label for="bingo-title">빙고 제목</label>
@@ -83,23 +112,20 @@
         </div>
         <div class="form-group">
           <label for="bingo-description">빙고 설명</label>
-          <textarea id="bingo-description" rows="3"></textarea>
+          <textarea id="bingo-description" rows="2"></textarea>
         </div>
         <div class="form-group">
-          <label>빙고판 (5x5 칸)</label>
+          <label>빙고판 (5x5 제목 + 질문)</label>
           <table id="bingo-table"><tbody></tbody></table>
         </div>
-        <button type="submit" class="btn btn-primary">💾 빙고 등록</button>
+        <button type="submit" class="btn btn-primary">💾 빙고 저장</button>
       </form>
-
       <div id="bingo-result" class="result-message"></div>
     </div>
   </div>
 
-  <!-- 공통 JS -->
   <script src="js/common.js"></script>
   <script src="js/admin-bingo.js"></script>
-
   <script>
     function checkLoginStatus() {
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
@@ -143,7 +169,6 @@
           document.getElementById('loginError').style.display = 'block';
         }
       } catch (err) {
-        console.error('로그인 오류:', err);
         document.getElementById('loginError').textContent = '서버 오류가 발생했습니다.';
         document.getElementById('loginError').style.display = 'block';
       }
@@ -153,17 +178,23 @@
       checkLoginStatus();
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
-      // 5x5 테이블 생성
+      // 빙고판 구성
       const tbody = document.querySelector('#bingo-table tbody');
       for (let i = 0; i < 5; i++) {
         const row = document.createElement('tr');
         for (let j = 0; j < 5; j++) {
           const cell = document.createElement('td');
-          const textarea = document.createElement('textarea');
-          textarea.id = `cell-${i}-${j}`;
-          textarea.placeholder = `(${i + 1},${j + 1})`;
-          
-          cell.appendChild(textarea);
+
+          const titleInput = document.createElement('input');
+          titleInput.id = `title-${i}-${j}`;
+          titleInput.placeholder = '제목';
+
+          const questionArea = document.createElement('textarea');
+          questionArea.id = `question-${i}-${j}`;
+          questionArea.placeholder = '질문';
+
+          cell.appendChild(titleInput);
+          cell.appendChild(questionArea);
           row.appendChild(cell);
         }
         tbody.appendChild(row);

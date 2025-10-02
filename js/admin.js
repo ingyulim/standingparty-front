@@ -372,6 +372,8 @@ async function createRoom() {
 
         const missionStatus = missionActive ? "🎯 미션 활성" : "⚪ 미션 비활성";
         const missionClass = missionActive ? "mission-active" : "mission-inactive";
+        const bingoStatus = bingoActive ? "🎲 빙고 활성" : "⚪ 빙고 비활성";
+        const bingoClass = bingoActive ? "mission-active" : "mission-inactive";
 
         roomCard.innerHTML = `
           <div class="room-header">
@@ -389,6 +391,10 @@ async function createRoom() {
             <div class="info-row">
               <span class="label">미션 상태</span>
               <span class="value ${missionClass}">${missionStatus}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">빙고 상태</span>
+              <span class="value ${bingoClass}">${bingoStatus}</span>
             </div>
           </div>
           

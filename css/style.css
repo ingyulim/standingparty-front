@@ -749,6 +749,51 @@ small {
   color: rgba(255, 255, 255, 0.5);
 }
 
+.mission-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mission-input-group input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.mission-input-group input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mission-input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mission-input-group button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.mission-input-group button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
 .mission-completed-badge {
   display: flex;
   align-items: center;
@@ -1158,8 +1203,13 @@ small {
 .admin-body .room-controls {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.admin-body .room-controls .btn-mission,
+.admin-body .room-controls .btn-bingo {
+  flex: 1;
+  min-width: 0;
 }
 
 .admin-body .btn-mission, 
@@ -1622,6 +1672,30 @@ body .login-container {
   cursor: not-allowed;
 }
 
+/* 내 포인트 섹션 */
+.my-points-section {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.my-points-section h3 {
+  color: white;
+  font-size: 16px;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.points-display {
+  color: #FFD700;
+  font-size: 36px;
+  font-weight: bold;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
 /* 빙고 미션 리스트 */
 .bingo-mission-list {
   margin-top: 30px;
@@ -1727,5 +1801,220 @@ body .login-container {
   
   .mission-text {
     font-size: 14px;
+  }
+}
+
+/* 빙고 미션 모달 */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10000 !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+.modal-container {
+  background: white !important;
+  border-radius: 16px !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  animation: modalSlideUp 0.3s ease !important;
+  position: relative !important;
+  margin: 0 auto !important;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 20px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #718096;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: #f7fafc;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-question {
+  background: #f7fafc;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #4a90e2;
+}
+
+.modal-question p {
+  margin: 0;
+  color: #2d3748;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.modal-input-group {
+  margin-bottom: 16px;
+}
+
+.modal-input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.modal-input-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.modal-input-group textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.modal-input-group input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.modal-input-group input[type="text"]:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.btn-photo-upload {
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-photo-upload:hover {
+  background: #357abd;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-modal-cancel,
+.btn-modal-submit {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-cancel {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-modal-cancel:hover {
+  background: #cbd5e0;
+}
+
+.btn-modal-submit {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+}
+
+.btn-modal-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 480px) {
+  .modal-container {
+    max-height: 95vh;
+    border-radius: 16px 16px 0 0;
+    margin-top: auto;
+  }
+  
+  .modal-header h3 {
+    font-size: 18px;
+  }
+  
+  .modal-question p {
+    font-size: 15px;
+  }
+  
+  .modal-input-group textarea {
+    font-size: 16px;
   }
 }
