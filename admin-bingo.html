@@ -6,84 +6,36 @@
   <title>빙고 관리 - Standing Party</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    .container { 
-      max-width: 1400px !important; 
-    }
-    
-    #bingo-table { 
-      width: 100%; 
-      border-collapse: separate; 
-      border-spacing: 16px; 
-      margin: 24px 0; 
-      table-layout: fixed; 
-    }
-    
+    .container { max-width: 1400px !important; }
+    #bingo-table { width: 100%; border-collapse: separate; border-spacing: 16px; margin: 24px 0; table-layout: fixed; }
     #bingo-table td { 
-      border: 2px solid #cbd5e0; 
-      padding: 16px; 
-      background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
-      vertical-align: top; 
-      width: 20%; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-      transition: all 0.3s ease;
+      border: 2px solid #cbd5e0; padding: 16px; background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+      vertical-align: top; width: 20%; border-radius: 12px; 
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07); transition: all 0.3s ease;
     }
-    
-    #bingo-table td:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-      transform: translateY(-2px);
+    #bingo-table td:hover { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
+    #bingo-table input[type="text"], #bingo-table textarea {
+      width: 100%; box-sizing: border-box; font-size: 14px;
+      border: 2px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+      transition: border-color 0.2s; background: white;
     }
-    
-    #bingo-table input {
-      width: 100%; 
-      box-sizing: border-box; 
-      font-size: 15px;
-      font-weight: 600;
-      border: 2px solid #e2e8f0; 
-      border-radius: 8px; 
-      padding: 10px 12px; 
-      margin-bottom: 10px;
-      transition: border-color 0.2s;
-      background: white;
+    #bingo-table input:focus, #bingo-table textarea:focus {
+      outline: none; border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
     }
-    
-    #bingo-table input:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    #bingo-table textarea { resize: none; min-height: 70px; line-height: 1.6; font-family: inherit; }
+    .photo-checkbox { 
+      display: flex; align-items: center; gap: 8px; font-size: 13px; 
+      padding: 8px 10px; background: #e3f2fd; border-radius: 6px;
+      border: 1px solid #4a90e2; margin-top: 8px;
     }
-    
-    #bingo-table textarea {
-      width: 100%;
-      box-sizing: border-box;
-      font-size: 14px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      resize: none;
-      min-height: 90px;
-      line-height: 1.6;
-      font-family: inherit;
-      transition: border-color 0.2s;
-      background: white;
+    .photo-checkbox input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer; margin: 0;
     }
-    
-    #bingo-table textarea:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    .photo-checkbox label {
+      cursor: pointer; font-weight: 500; color: #1a202c !important; margin: 0; user-select: none;
     }
-    
-    .section-title {
-      margin-bottom: 8px;
-    }
-    
-    .form-group label {
-      color: white;
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: block;
-    }
+    .section-title { margin-bottom: 8px; }
+    .form-group label { color: white; font-weight: 600; margin-bottom: 8px; display: block; }
   </style>
 </head>
 <body class="admin-body">
@@ -115,12 +67,19 @@
           <textarea id="bingo-description" rows="2"></textarea>
         </div>
         <div class="form-group">
-          <label>빙고판 (5x5 제목 + 질문)</label>
+          <label>빙고판 (5x5) - 각 칸마다 제목, 질문, 사진 첨부 필수 여부를 설정하세요</label>
           <table id="bingo-table"><tbody></tbody></table>
         </div>
         <button type="submit" class="btn btn-primary">💾 빙고 저장</button>
       </form>
       <div id="bingo-result" class="result-message"></div>
+      
+      <!-- 참여자 제출 내역 섹션 -->
+      <div class="form-group" style="margin-top: 40px;">
+        <label>📋 참여자 제출 내역</label>
+        <button onclick="handleBulkDelete()" class="btn btn-danger" style="margin-bottom: 16px; display: none;" id="bulkDeleteBtn">🚨 전체 제출 삭제</button>
+        <div id="submissionList" class="list-box" style="max-height: 600px; overflow-y: auto; padding: 16px; background: white; border-radius: 12px;"></div>
+      </div>
     </div>
   </div>
 
@@ -129,46 +88,28 @@
   <script>
     function checkLoginStatus() {
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-      const loginScreen = document.getElementById('loginScreen');
-      const adminMain = document.getElementById('adminMain');
-      
-      if (isLoggedIn) {
-        loginScreen.style.setProperty('display', 'none', 'important');
-        adminMain.style.setProperty('display', 'block', 'important');
-      } else {
-        loginScreen.style.setProperty('display', 'block', 'important');
-        adminMain.style.setProperty('display', 'none', 'important');
-      }
+      document.getElementById('loginScreen').style.setProperty('display', isLoggedIn ? 'none' : 'block', 'important');
+      document.getElementById('adminMain').style.setProperty('display', isLoggedIn ? 'block' : 'none', 'important');
     }
 
     async function handleLogin(event) {
       event.preventDefault();
       const password = document.getElementById('adminPassword').value;
-
       try {
         const res = await fetch('https://ul4jxnpezi.execute-api.ap-northeast-2.amazonaws.com/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password })
         });
-
         const result = await res.json();
         if (result.success) {
           localStorage.setItem('adminLoggedIn', 'true');
-          
-          const loginScreen = document.getElementById('loginScreen');
-          const adminMain = document.getElementById('adminMain');
-          
-          loginScreen.style.setProperty('display', 'none', 'important');
-          adminMain.style.setProperty('display', 'block', 'important');
-          
+          checkLoginStatus();
           document.getElementById('loginError').textContent = '';
           document.getElementById('adminPassword').value = '';
         } else {
           document.getElementById('loginError').textContent = '❌ 비밀번호가 올바르지 않습니다.';
           document.getElementById('loginError').style.display = 'block';
         }
-      } catch (err) {
+      } catch {
         document.getElementById('loginError').textContent = '서버 오류가 발생했습니다.';
         document.getElementById('loginError').style.display = 'block';
       }
@@ -178,7 +119,7 @@
       checkLoginStatus();
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
-      // 빙고판 구성
+      // 빙고판 구성 (5x5)
       const tbody = document.querySelector('#bingo-table tbody');
       for (let i = 0; i < 5; i++) {
         const row = document.createElement('tr');
@@ -193,8 +134,20 @@
           questionArea.id = `question-${i}-${j}`;
           questionArea.placeholder = '질문';
 
+          const photoCheckbox = document.createElement('div');
+          photoCheckbox.className = "photo-checkbox";
+          const checkbox = document.createElement('input');
+          checkbox.type = "checkbox";
+          checkbox.id = `photo-${i}-${j}`;
+          const label = document.createElement('label');
+          label.setAttribute("for", `photo-${i}-${j}`);
+          label.textContent = "사진 첨부 필요";
+          photoCheckbox.appendChild(checkbox);
+          photoCheckbox.appendChild(label);
+
           cell.appendChild(titleInput);
           cell.appendChild(questionArea);
+          cell.appendChild(photoCheckbox);
           row.appendChild(cell);
         }
         tbody.appendChild(row);

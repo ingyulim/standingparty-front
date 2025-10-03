@@ -412,6 +412,16 @@ async function createRoom() {
               ${bingoActive ? '빙고 비활성화' : '빙고 활성화'}
             </button>
           </div>
+          <div class="room-controls" style="margin-top: 8px;">
+            <button class="btn-view-submissions"
+                    onclick="location.href='admin-submissions.html?roomId=${id}'">
+              📝 미션 제출 내역
+            </button>
+            <button class="btn-view-submissions"
+                    onclick="location.href='admin-bingo.html?roomId=${id}'">
+              📋 빙고 제출 내역
+            </button>
+          </div>
           
           <div id="participants-${id}" class="participants-section">
             <div class="participants-header">

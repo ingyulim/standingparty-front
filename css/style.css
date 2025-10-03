@@ -1207,13 +1207,15 @@ small {
 }
 
 .admin-body .room-controls .btn-mission,
-.admin-body .room-controls .btn-bingo {
+.admin-body .room-controls .btn-bingo,
+.admin-body .room-controls .btn-view-submissions {
   flex: 1;
   min-width: 0;
 }
 
 .admin-body .btn-mission, 
 .admin-body .btn-bingo,
+.admin-body .btn-view-submissions,
 .admin-body .btn-participants, 
 .admin-body .btn-delete {
   padding: 10px 20px;
@@ -1243,6 +1245,16 @@ small {
 .admin-body .btn-bingo {
   background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
   color: white;
+}
+
+.admin-body .btn-view-submissions {
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+  color: #2d3436;
+}
+
+.admin-body .btn-view-submissions:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(253, 203, 110, 0.4);
 }
 
 .admin-body .btn-bingo:hover {

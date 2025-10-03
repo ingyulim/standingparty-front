@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미션 제출 내역 - Standing Party</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="admin-body">
+  <!-- 로그인 화면 -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-container">
+      <h1 class="login-title">관리자 인증</h1>
+      <form id="loginForm" class="login-form">
+        <input type="password" id="adminPassword" placeholder="관리자 비밀번호" required class="password-input"/>
+        <button type="submit" class="btn-login">로그인</button>
+      </form>
+      <div id="loginError" class="error-message"></div>
+    </div>
+  </div>
+
+  <!-- 관리자 메인 화면 -->
+  <div id="adminMain" class="admin-container" style="display: none;">
+    <button class="btn-back" onclick="location.href='admin.html'">← 관리자 홈으로</button>
+    
+    <div class="container">
+      <h1 class="section-title">🎯 미션 제출 내역</h1>
+      
+      <button onclick="handleBulkDelete()" class="btn btn-danger" style="margin-bottom: 16px; display: none;" id="bulkDeleteBtn">🚨 전체 제출 반려</button>
+      
+      <div id="submissionList" style="padding: 16px; background: white; border-radius: 12px;">로딩 중...</div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+    function checkLoginStatus() {
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      document.getElementById('loginScreen').style.setProperty('display', isLoggedIn ? 'none' : 'block', 'important');
+      document.getElementById('adminMain').style.setProperty('display', isLoggedIn ? 'block' : 'none', 'important');
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById('adminPassword').value;
+      try {
+        const res = await fetch('https://ul4jxnpezi.execute-api.ap-northeast-2.amazonaws.com/admin/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password })
+        });
+        const result = await res.json();
+        if (result.success) {
+          localStorage.setItem('adminLoggedIn', 'true');
+          checkLoginStatus();
+          document.getElementById('loginError').textContent = '';
+        } else {
+          document.getElementById('loginError').textContent = '비밀번호가 틀렸습니다.';
+        }
+      } catch (err) {
+        document.getElementById('loginError').textContent = '로그인 중 오류가 발생했습니다.';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    checkLoginStatus();
+
+    const roomId = new URLSearchParams(location.search).get("roomId");
+
+    if (!roomId) {
+      document.getElementById("submissionList").innerHTML = "<p style='color: #e53e3e; text-align: center; padding: 20px;'>❌ roomId가 필요합니다.</p>";
+    } else {
+      // 전체 삭제 버튼 표시
+      const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+      if (bulkDeleteBtn) {
+        bulkDeleteBtn.style.display = 'block';
+      }
+      loadSubmissions();
+    }
+
+    async function loadSubmissions() {
+      try {
+        // 1. 먼저 모든 글로벌 미션 가져오기
+        const missionsRes = await callAPI(`/admin/missions`, "GET");
+        const missions = Array.isArray(missionsRes) ? missionsRes : [];
+        
+        if (missions.length === 0) {
+          document.getElementById("submissionList").innerHTML = "<p style='color: #999; text-align: center; padding: 20px;'>등록된 미션이 없습니다.</p>";
+          return;
+        }
+
+        // 2. 각 미션별로 제출 내역 조회
+        const allSubmissions = [];
+        for (const mission of missions) {
+          try {
+            const res = await callAPI(`/missions/submissions?roomId=${roomId}&missionId=${mission.missionId}`, "GET");
+            const subs = Array.isArray(res) ? res : (res.submissions || []);
+            
+            // 미션 제목 추가
+            subs.forEach(sub => {
+              sub.missionTitle = mission.title;
+              sub.missionId = mission.missionId;
+            });
+            
+            allSubmissions.push(...subs);
+          } catch (err) {
+            console.warn(`미션 ${mission.missionId} 제출 내역 조회 실패:`, err);
+          }
+        }
+
+        const container = document.getElementById("submissionList");
+        container.innerHTML = "";
+
+        if (allSubmissions.length === 0) {
+          container.innerHTML = "<p style='color: #999; text-align: center; padding: 20px;'>제출 내역이 없습니다.</p>";
+          return;
+        }
+
+        const submissions = allSubmissions;
+
+        submissions.forEach(sub => {
+          const card = document.createElement("div");
+          card.className = "card-item";
+          card.style.cssText = "margin-bottom: 16px; padding: 16px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;";
+
+          const imageUrl = sub.imageUrl ? encodeURI(sub.imageUrl) : null;
+
+          card.innerHTML = `
+            <strong style="font-size: 16px; color: #2d3748;">${sub.nickname || "(닉네임 없음)"}</strong><br/>
+            <span style="color: #4a5568;">🎯 미션: ${sub.missionTitle || sub.missionId || "-"}</span><br/>
+            <span style="color: #718096;">🧩 상대: ${sub.targetCode || "-"}</span><br/>
+            <span style="color: #4a5568;">⏰ ${sub.completedAt || "-"}</span><br/>
+            ${imageUrl ? `<img src="${imageUrl}" style="max-width: 150px; width: auto; height: auto; display: block; margin-top: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="openImageModal('${imageUrl}')" onerror="this.style.display='none';">` : ""}
+          `;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "❌ 반려";
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.style.cssText = "margin-top: 12px; padding: 8px 16px; background: #e53e3e; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;";
+          deleteBtn.onclick = () => deleteSubmission(sub.missionId, sub.phone);
+          
+          card.appendChild(deleteBtn);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("제출 내역 로딩 실패", err);
+        document.getElementById("submissionList").innerHTML = `<p style='color: #e53e3e; text-align: center; padding: 20px;'>❌ 오류 발생: ${err.message}</p>`;
+      }
+    }
+
+    async function deleteSubmission(missionId, phone) {
+      if (!confirm("정말 반려하시겠습니까?")) return;
+      try {
+        const payload = { roomId, missionId, phone };
+        await callAPI("/missions/submission/delete", "POST", payload);
+        alert("반려되었습니다.");
+        loadSubmissions();
+      } catch (err) {
+        alert("❌ 반려 실패: " + err.message);
+      }
+    }
+
+    // 전체 제출 반려
+    async function handleBulkDelete() {
+      if (!confirm("정말로 이 방의 모든 미션 제출을 반려하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
+
+      try {
+        const payload = { roomId };
+        await callAPI("/missions/deleteAllByRoom", "POST", payload);
+        alert("전체 반려 완료");
+        loadSubmissions();
+      } catch (err) {
+        alert("❌ 전체 반려 실패: " + err.message);
+      }
+    }
+
+    // 이미지 모달 열기
+    window.openImageModal = (imageUrl) => {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;';
+      
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.style.cssText = 'max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);';
+      
+      modal.appendChild(img);
+      modal.onclick = () => modal.remove();
+      document.body.appendChild(modal);
+    };
+  </script>
+</body>
+</html>
+
